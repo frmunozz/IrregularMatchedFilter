@@ -1,4 +1,14 @@
+# ignoring python compilation files
+__pycache__/
+*.pyc
+# ignoring some file generating while test
 *.npy
 .ipynb_checkpoints/
 .idea/
 .files/
+# ignoring latex compilation files
+*.aux
+*.log
+*.lol
+*.toc
+*.synctex.gz
