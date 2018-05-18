@@ -1,0 +1,106 @@
+% Template:     Informe/Reporte LaTeX
+% Documento:    Índice
+% Versión:      5.1.5 (15/05/2018)
+% Codificación: UTF-8
+%
+% Autor: Pablo Pizarro R. @ppizarror
+%        Facultad de Ciencias Físicas y Matemáticas
+%        Universidad de Chile
+%        pablo.pizarro@ing.uchile.cl, ppizarror.com
+%
+% Manual template: [http://latex.ppizarror.com/Template-Informe/]
+% Licencia MIT:    [https://opensource.org/licenses/MIT/]
+
+\ifthenelse{\equal{\showindex}{true}}{
+	
+	% Crea nueva página y establece estilo de títulos
+	\newpage
+	\sectionfont{\color{\indextitlecolor} \fontsizetitlei \styletitlei \selectfont}
+	
+	% Añade la entrada del índice a los marcadores del pdf
+	\ifthenelse{\equal{\addindextobookmarks}{true}}{
+		\belowpdfbookmark{\nomltcont}{contents}}{
+	}
+	\tocloftpagestyle{fancy}
+	
+	% Configuración del punto en índice
+	\ifthenelse{\equal{\showdotontitles}{true}}{
+		\def\cftsecaftersnum {.}
+		\def\cftsubsecaftersnum {.}
+		\def\cftsubsubsecaftersnum {.}
+		}{
+	}
+
+	% Configuración del punto en número de objetos
+	\def\cftfigaftersnum {\charafterobjectindex\enspace}
+	\def\cftsubfigaftersnum {\charafterobjectindex\enspace}
+	\def\cfttabaftersnum {\charafterobjectindex\enspace}
+	\def\cftlstlistingaftersnum {\charafterobjectindex\enspace}
+	
+	% Configuración carácter número de página
+	\renewcommand{\cftdot}{\charnumpageindex}
+	
+	% Desactiva los números de línea
+	\ifthenelse{\equal{\showlinenumbers}{true}}{
+		\nolinenumbers}{
+	}
+	
+	% Iguala tamaño del margen en números de objetos
+	\ifthenelse{\equal{\equalmarginnumobject}{true}}{
+		
+		% Calcula tamaño del margen de los números en objetos del índice dependiendo de la configuración
+		\ifthenelse{\equal{\showsectioncaption}{none}}{
+			\def\cftdefautllistingnumwidth {2.3em}
+		}{
+		\ifthenelse{\equal{\showsectioncaption}{sec}}{
+			\def\cftdefautllistingnumwidth {3.0em}
+		}{
+		\ifthenelse{\equal{\showsectioncaption}{ssec}}{
+			\def\cftdefautllistingnumwidth {3.8em}
+		}{
+		\ifthenelse{\equal{\showsectioncaption}{sssec}}{
+			\def\cftdefautllistingnumwidth {4.3em}
+		}{
+			\throwbadconfig{Valor configuracion incorrecto}{\showsectioncaption}{none,sec,ssec,sssec}}}}
+		}
+		
+		% Configuración identado de títulos de objetos después del número
+		\def\cftfignumwidth {\cftdefautllistingnumwidth}
+		\def\cftsubfignumwidth {\cftdefautllistingnumwidth}
+		\def\cfttabnumwidth {\cftdefautllistingnumwidth}
+		\def\cftlstlistingnumwidth {\cftdefautllistingnumwidth}}{
+	}
+
+	% Índice de Contenidos
+	\ifthenelse{\equal{\showindexofcontents}{true}}{\tableofcontents}{}
+	
+	% Lista de Figuras
+	\iftotalfigures
+		\ifthenelse{\equal{\showindexoffigures}{true}}{\listoffigures}{}
+	\fi
+	
+	% Lista de Tablas
+	\iftotaltables
+		\ifthenelse{\equal{\showindexoftables}{true}}{\listoftables}{}
+	\fi
+	
+	% Lista del Código Fuente
+	\iftotallstlistings
+		\ifthenelse{\equal{\showindexofcode}{true}}{\lstlistoflistings}{}
+	\fi
+	
+	% Se añade una página en blanco
+	\ifthenelse{\equal{\addemptypagetwosides}{true}}{
+		\vfill
+		\checkoddpage
+		\ifoddpage
+		\else
+			\newpage
+			\null
+			\thispagestyle{empty}
+			\newpage
+			\addtocounter{page}{-1}
+		\fi}{
+	}
+
+}{}
