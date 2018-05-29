@@ -30,4 +30,3 @@ class Window:
         elif self.window_type == 'linear':
             window = np.ones(size) * self.prm[0]
         return window
-

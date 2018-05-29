@@ -47,7 +47,7 @@ plt.plot(T, data, alpha=0.5)
 plt.plot(T, s, "k.-")
 plt.show()
 
-t_seg = 0.5 * (max(T) - min(T))
+t_seg = (max(T) - min(T))
 mf = core.MatchedFilter(T, data, template=template,
                         prm_segment={'ovlp_fact': 0.5, 't_segment': t_seg})
 s_t, s_data, s_temp = mf.compute_nfft()
