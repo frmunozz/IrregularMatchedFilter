@@ -12,9 +12,96 @@
 % Manual template: [http://latex.ppizarror.com/Template-Informe/]
 % Licencia MIT:    [https://opensource.org/licenses/MIT/]
 
+% define some usefull commands
+\newcommand\FF{\mathcal{F}}
 
 % NUEVA SECCIÓN
 \section{Introduccion}
 \newp por definir.
-	
+
+\section{Transformada de Fourier}
+\newp La Transformada de Fourier es una transformaci\'on matematica que nos permite descomponer señales. Iniciando con el analisis para señales continuas, tendremos la Transformada Directa de Fourier, representando la descomposicion de datos que originalmente estaban en el espacio de frequencias $\tilde{x}(f)$ por coeficientes en el espacio de tiempos $x(t)$:
+
+\insertequation[\label{eq1}]{\tilde{x}(f) = \int_{-\infty}^{\infty} x(t)e^{-2i\pi f t} dt = \FF[x(t)]}
+
+\newp Y la Transformada Inversa de Fourier que representa la descomposicion de datos que originalmente estaban en el espacio de tiempos $x(t)$ por coeficientes en el espacio de frequencias $\tilde{x}(f)$:
+
+\insertequation[\label{eq2}]{x(t) = \int_{-\infty}^{\infty} \tilde{x}(f)e^{2i\pi f t } df = \FF^{-1}[\tilde{x}(f)]}
+
+\subsection{Propiedades de la Transformada de Fourier}
+\newp Algunas propiedas importantes de la Transformada de Fourier, que seran utilizadas posteriormente, son:
+\\
+\textbf{La transformada de Fourier es un operador lineal.} Esto significa que, dada una constante $a$ y funciones $f(t)$ y $g(t)$, se cumplira que:
+\insertequation[\label{eq3}]{\FF[f(t) + g(t)] =  \FF[f(t)] + \FF[g(t)]} 
+\insertequation[\label{eq4}]{\FF[af(t)] = a\FF[f(t)] }
+\\
+\textbf{Una traslacion genera una fase en la Transformada de Fourier.} Para una funcion $f(t)$, se cumple:
+
+\insertequation[\label{eq5}]{\FF[f(t - t_0)] = \FF[f(t)]e^{-2i\pi f t_0} }
+\\
+\textbf{Teorema de la convolusion.} Si bien la convolusion de dos funciones $f(t)$ y $g(t)$, esta definida por:
+
+\insertequation[\label{eq6}]{[f * g] = \int_{-\infty}^{\infty} f(t) g(t- \tau) d\tau}
+
+\newp Calcular su Transformada de Fourier cumple con:
+
+\insertequation[\label{eq7}]{\FF[f * g] = \FF[f] \cdotp \FF[g]}
+
+\newp o tambien se puede aplicar:
+
+\insertequation[\label{eq8}]{\FF[f \cdotp g)] = \FF[f] * \FF[g]}
+\\
+\textbf{Teorema de la multiplicaci\'on.} Nos dice que, dado funciones $x(t)$ y $y(t)$, su multiplicacion cumple con:
+\insertequation[\label{eq9}]{\int_{-\infty}^{\infty}x(t)y^*(t)dt = \int_{-\infty}^{\infty}\tilde{x}(\omega)\tilde{y}^*(f)df}
+\\
+\textbf{Correlaci\'on.} La correlaci\'on cruzada de dos señales reales $x(t)$ y $y(t)$ esta definida po:
+
+\insertequation[\label{eq10}]{R_{xy}(t) \overset{\Delta}{=} \int_{-\infty}^{\infty} x(\tau)y(\tau - t)d\tau = \int_{-\infty}^{\infty} x(t + \tau)y(\tau)d\tau}
+
+\newp Luego, aplicando el teorema de la multiplicaci\'on (\ref{eq9}) junto con la propiedad de traslaci\'on (\ref{eq5}) se obtiene:
+
+\insertequation[\label{eq11}]{R_{xy} = \int_{-\infty}^{\infty} \tilde{x}(\omega) \tilde{y}^*(\omega)e^{2i\pi \tau}df}
+
+\newp Lo cual corresponde a la Transformada inversa de la Transformada de la convolucion de las dos señales (\ref{eq7})
+
+\insertequation[\label{eq12}]{R_{xy} = \FF^{-1}[\FF[x * y]]}
+
+\newp Un resultado particular es la autocorrelaci\'on la cual corresponde a la transformada inversa de la Densidad de Potencial Espectral:
+
+\insertequation[\label{eq13}]{R_{xx} = \FF^{-1}[|\tilde{x}(f)|^{2}] = \FF^{-1}[S_x(f)]}
+
+\subsection{La funcion Ventana}
+\newp La transformada de fourier continua cuenta con la particularidad de que las funciones continuas esten bien definidas para todos los tiempos ($-\infty < t < \infty$). Esto es una idealizacion que no ocurre en señales reales devido a que solo son medidas en intervalos finitos de tiempo, con una frequencia de sampleo finita (no necesariamente constante). El ejemplo mas directo es que una señal continua medida en un intervalo de tiempo es igual a aplicar una ventana rectangular a la señal teorica medida en todos los tiempos.
+\newp Luego, la transformada de Fourier pasa de ser una transformacion de la funcion continua a la transformacion del producto elemento a elemento entre la señal y la ventaba observada.
+
+\insertequation[\label{eq14}]{g_{obs}(t) = g(t)W(t)}
+
+\newp Usando el teorema de la convoluci\'on (\ref{eq8}), la transformada correspondera a la convoluci\'on de transformadas.
+
+\insertequation[\label{eq15}]{\FF[q_{obs}(t)] = \FF[g(t)] * \FF[W(t)]}
+
+\newp Una aplicacion importante es usar ventanas que permitan reducir discontinuidad en los bordes de observacion, esto es necesario porque observar señales reales nunca entregara una periodicidad perfecta y tener discontinuidad afecta negativamente a los resultados que se puedan obtener de la transformada. Exsisten varios tipos de ventanas que se pueden aplicar, entre ellas, \textit{Hann}, \textit{Tukey}, \textit{Blackmann}. La que se utilizara en esta ocacion es \textit{Tukey} que corresponde a:
+
+\insertequation[\label{eq16}]{w(n) = \begin{cases}
+\frac{1}{2} \left[1 + cos\left(\pi \left(\frac{2n}{\alpha (N-1} - 1  \right) \right) \right] & 0 \leq n < \frac{\alpha(N-1)}{2} \\
+1 & \frac{\alpha(N-1)}{2} \leq n \leq (N-1)(1-\frac{\alpha}{2})\\
+\frac{1}{2} \left[1 + cos\left(\pi \left(\frac{2n}{\alpha (N-1} - \frac{2}{\alpha} +  1  \right) \right) \right] & (N-1)(1 - \frac{\alpha}{2} < n \leq (N-1))
+\end{cases}}
+
+\newp Donde el factor $\alpha$ define la forma, cuando $\alpha=0$ se transforma en una ventana rectangular y para $\alpha=1$ se transforma en una venta de \textit{Hann}
+
+
+%el dominio del tiempo representandola en el dominion de frequencias o vice versa. Esto nos permite obtener para una señal \textbf{periodica} discreta $s(t)$, una descomposici\'on dada por:
+
+%\insertequation[]{s_P(t) = \frac{1}{N}\sum_k S[k]\cdotp e^{2i\pi\frac{kt}{NT}} = \frac{1}{T}\sum_k S_{\frac{1}{T}} \left(\frac{k}{P}\right) \cdotp e^{2i\pi \frac{kt}{NT}}}  
+
+%\newp En donde $P$ es el periodo de la señal y $S[k]$ es el coeficiente de fourier representando el valor de la descomposicion para la k-esima frequencia. Los coeficientes de fourier son tambien conocidos como la Tansformada inversa de Fourier y estaran dados por:
+%\insertequation[]{\frac{1}{T} S = \frac{1}{P}\int_{t_0}^{t_0 + P} x(t)e^{-2i\pi \frac{n}{P} t }dt}
+
+%\newp Lo que para una señal discreta se traduce en:
+%\insertequation[]{x_j = \sum_{k =  \frac{f_{min}}{df}}^{\frac{f_{max}}{df}} c_j e^{2i\pi\frac{j}{P} t}}
+%\insertequation[]{c_k = \frac{1}{P}\sum_{j = t_{min}}^{t_{min} + P} x_j e^{2i\pi\frac{k}{P} j}}
+
+ 
+%\newp El Trabajo realizado se basa en las propiedades que entrega la transformada de fourier para facilitar encontrar correlacion entre dos tipos de señales.Esto nace desde la propiedad de la convoluci\'on de dos señales. Esta convolusion viene definida por 
 		
