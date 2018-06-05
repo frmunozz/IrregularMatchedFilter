@@ -1,6 +1,6 @@
 % Template:     Informe/Reporte LaTeX
 % Documento:    Configuraciones del template
-% Versión:      5.1.5 (15/05/2018)
+% Versión:      5.4.0 (21/05/2018)
 % Codificación: UTF-8
 %
 % Autor: Pablo Pizarro R. @ppizarror
@@ -17,8 +17,9 @@
 \def\defaultinterline {1.0}        % Interlineado por defecto [pt]
 \def\defaultnewlinesize {11}       % Tamaño del salto de línea [pt]
 \def\documentlang {es-CL}          % Define el idioma del documento
-\def\fontdocument {lmodern}        % Tipografía (lmodern,arial,helvet)
-\def\importtikz {false}            % Importar la librería tikz
+\def\fontdocument {lmodern}        % Tipografía base, ver soportadas en manual
+\def\fonttypewriter {tmodern}      % Tipografía de \texttt, ver manual
+\def\importtikz {false}            % Utilizar la librería tikz
 \def\numberedequation {true}       % Ecuaciones con \insert... numeradas
 \def\pointdecimal {false}          % N° decimales con punto en vez de coma
 \def\romanpageuppercase {false}    % Páginas en número romano en mayúsculas
@@ -26,8 +27,8 @@
 \def\tablepadding {1.0}            % Espaciado de celda de las tablas
 
 % ESTILO PORTADA Y HEADER-FOOTER
-\def\hfstyle {style9}              % Estilo header-footer (10 estilos disp.)
-\def\portraitstyle {style9}        % Estilo portada (16 estilos disp.)
+\def\hfstyle {style1}              % Estilo header-footer (10 estilos disp.)
+\def\portraitstyle {style1}        % Estilo portada (18 estilos disp.)
 
 % MÁRGENES DE PÁGINA
 \def\firstpagemargintop {3.8}      % Margen superior página portada [cm]
@@ -78,6 +79,7 @@
 \def\numcitecolor {black}          % Color del n° de las referencias o citas
 \def\portraittitlecolor {black}    % Color de los títulos de la portada
 \def\showborderonlinks {false}     % Color de un link por un recuadro de color
+\def\sourcecodebgcolor {lgray}     % Color de fondo del código fuente
 \def\subsubtitlecolor {black}      % Color de los sub-subtítulos
 \def\subtitlecolor {black}         % Color de los subtítulos
 \def\tablelinecolor {black}        % Color de las líneas de las tablas
@@ -125,23 +127,23 @@
 \def\cfgpdffitwindow {false}       % Ajusta la ventana del lector tamaño pdf
 \def\cfgpdfmenubar {true}          % Muestra el menú del lector
 \def\cfgpdfpagemode {OneColumn}    % Modo de página (OneColumn,SinglePage)
-\def\cfgpdfpageview {FitH}         % (Fit,FitH,FitV,FitR,FitB,FitBH,FitBV)
+\def\cfgpdfpageview {FitH}         % Fit,FitH,FitV,FitR,FitB,FitBH,FitBV
 \def\cfgpdfsecnumbookmarks {true}  % Número de la sec. en marcadores del pdf
 \def\cfgpdftoolbar {true}          % Muestra barra de herramientas lector pdf
 \def\cfgshowbookmarkmenu {true}    % Muestra menú marcadores al abrir el pdf
 \def\pdfcompileversion {7}         % Versión mínima del pdf compilado (1.x)
 
 % NOMBRE DE OBJETOS
-\def\nameabstract {Resumen}           % Nombre del resumen-abstract
-\def\nameappendixsection {Anexos}     % Nombre de la sec. de anexos/apéndices
-\def\nameportraitpage {Portada}       % Etiqueta página de la portada
-\def\namereferences {Referencias}     % Nombre de la sección de referencias
-\def\nomchapter {Capítulo}            % Nombre de los capítulos
-\def\nomltappendixsection {Anexo}     % Etiqueta sección en anexo/apéndices
-\def\nomltcont {Índice de Contenidos} % Nombre del índice de contenidos
-\def\nomltfigure {Lista de Figuras}   % Nombre del índ. de lista de figuras
-\def\nomltsrc {Lista de Códigos}      % Nombre del índ. de lista de código
-\def\nomlttable {Lista de Tablas}     % Nombre del índ. de lista de tablas
-\def\nomltwfigure {Figura}            % Etiqueta leyenda de las figuras
-\def\nomltwsrc {Código}               % Etiqueta leyenda del código fuente
-\def\nomltwtable {Tabla}              % Etiqueta leyenda de las tablas
+\def\nameabstract {Abstract}           % Nombre del resumen-abstract
+\def\nameappendixsection {Appendix}     % Nombre de la sec. de anexos/apéndices
+\def\nameportraitpage {Portrait Page}       % Etiqueta página de la portada
+\def\namereferences {References}     % Nombre de la sección de referencias
+\def\nomchapter {Chapter}            % Nombre de los capítulos
+\def\nomltappendixsection {Appendix}     % Etiqueta sección en anexo/apéndices
+\def\nomltcont {Table of Contents} % Nombre del índice de contenidos
+\def\nomltfigure {Table of Figures}   % Nombre del índice de lista de figuras
+\def\nomltsrc {List of Source Code}      % Nombre del índice de lista de código
+\def\nomlttable {List of Tables}     % Nombre del índice de lista de tablas
+\def\nomltwfigure {Figure}            % Etiqueta leyenda de las figuras
+\def\nomltwsrc {Code}               % Etiqueta leyenda del código fuente
+\def\nomltwtable {Table}              % Etiqueta leyenda de las tablas

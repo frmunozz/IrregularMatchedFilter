@@ -17,16 +17,16 @@
 \usepackage[utf8]{inputenc} % Codificación UTF-8
 
 % INFORMACIÓN DEL DOCUMENTO
-\def\titulodelinforme {Matching Filter para la deteccion de eventos}
-\def\temaatratar {Reporte de Avances}
+\def\titulodelinforme {Matching Filter for event detection}
+\def\temaatratar {Report}
 
 \def\autordeldocumento {Francisco Muñoz}
 \def\nombredelcurso {aaaa}
 \def\codigodelcurso {cccc}
 
-\def\nombreuniversidad {Universidad de Chile}
-\def\nombrefacultad {Facultad de Ciencias Físicas y Matemáticas}
-\def\departamentouniversidad { }
+\def\nombreuniversidad {University of Chile}
+\def\nombrefacultad {Faculty of Physical and Mathematical Science}
+\def\departamentouniversidad {}
 \def\imagendepartamento {departamentos/fcfm}
 \def\imagendepartamentoescala {0.2}
 \def\localizacionuniversidad {Santiago, Chile}
@@ -34,27 +34,30 @@
 % INTEGRANTES, PROFESORES Y FECHAS
 \def\tablaintegrantes {
 \begin{tabular}{ll}
-	Autor:
+	Author:
 	& \begin{tabular}[t]{@{}l@{}}
 		\autordeldocumento
 	\end{tabular} \\
-	Profesores Guia:
+	Professors:
 	& \begin{tabular}[t]{@{}l@{}}
 		Francisco Förster \\
 		Pablo Huijse
 	\end{tabular} \\
 	& \\
-	\multicolumn{2}{l}{Ultima Actualización: \today} \\
+	\multicolumn{2}{l}{Last Update: \today} \\
 	\multicolumn{2}{l}{\localizacionuniversidad}
 \end{tabular}}{
 }
 
 % CONFIGURACIONES
 \input{lib/config}
+% ESTILO PORTADA Y HEADER-FOOTER
+\def\hfstyle {style9}              % Estilo header-footer (10 estilos disp.)
+\def\portraitstyle {style9}        % Estilo portada (16 estilos disp.)
 
 % IMPORTACIÓN DE LIBRERÍAS
 \input{lib/env/imports}
-\renewcommand{\thesection}{\Roman{section}}  % redefinicion de los numeros en section
+%\renewcommand{\thesection}{\Roman{section}}  % redefinicion de los numeros en section
 
 % IMPORTACIÓN DE FUNCIONES Y ENTORNOS
 \input{lib/cmd/all}
@@ -65,6 +68,7 @@
 % CONFIGURACIÓN INICIAL DEL DOCUMENTO
 \input{lib/cfg/init}
 % INICIO DE LAS PÁGINAS
+%\titleformat{\section}[hang]{\bfseries}{\thesection}{0pt}{}
 \begin{document}
 
 % PORTADA

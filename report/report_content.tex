@@ -16,92 +16,240 @@
 \newcommand\FF{\mathcal{F}}
 
 % NUEVA SECCIÓN
-\section{Introduccion}
+\section{Introduction}{\label{sec_intro}}
 \newp por definir.
 
-\section{Transformada de Fourier}
-\newp La Transformada de Fourier es una transformaci\'on matematica que nos permite descomponer señales. Iniciando con el analisis para señales continuas, tendremos la Transformada Directa de Fourier, representando la descomposicion de datos que originalmente estaban en el espacio de frequencias $\tilde{x}(f)$ por coeficientes en el espacio de tiempos $x(t)$:
+\section{Fourier Transform}{\label{sec_ft}}
+\newp The Fourier Transform it's a Mathematical toll that allow us to decompone singals by a given dictionary or in other words, to apply a change of basis to a given signal. Thinking on a continuous signal $s(t)$, it's Fourier Transform is given by the following integral, where $i =  \sqrt{-1}$ denotes the imaginary unit:
+\insertequation[\label{ft}]{\tilde{s}(f) = \int_{-\infty}^{\infty} s(t)e^{-2i\pi f t} dt = \FF[s(t)]}
 
-\insertequation[\label{eq1}]{\tilde{x}(f) = \int_{-\infty}^{\infty} x(t)e^{-2i\pi f t} dt = \FF[x(t)]}
+\newp And the inverse transform is:
 
-\newp Y la Transformada Inversa de Fourier que representa la descomposicion de datos que originalmente estaban en el espacio de tiempos $x(t)$ por coeficientes en el espacio de frequencias $\tilde{x}(f)$:
+\insertequation[\label{ift}]{s(t) = \int_{-\infty}^{\infty} \tilde{s}(f)e^{2i\pi f t } df = \FF^{-1}[\tilde{s}(f)]}
 
-\insertequation[\label{eq2}]{x(t) = \int_{-\infty}^{\infty} \tilde{x}(f)e^{2i\pi f t } df = \FF^{-1}[\tilde{x}(f)]}
+\subsection{Properties of the Fourier Transform}{\label{subsec_propft}}
+\newp Some usefull properties of the Fourier Transform are:
+	\begin{description}
+	
+	\item \textbf{Fourier Transform is a linear operator}. This means that, given a constant $a$ and 		functions $s(t)$, $h(t)$, we can write:
+	\insertequation[\label{linear1}]{\FF[s(t) + h(t)] =  \FF[s(t)] + \FF[h(t)]} 
+	\insertequation[\label{linear2}]{\FF[as(t)] = a\FF[s(t)] }
 
-\subsection{Propiedades de la Transformada de Fourier}
-\newp Algunas propiedas importantes de la Transformada de Fourier, que seran utilizadas posteriormente, son:
-\\
-\textbf{La transformada de Fourier es un operador lineal.} Esto significa que, dada una constante $a$ y funciones $f(t)$ y $g(t)$, se cumplira que:
-\insertequation[\label{eq3}]{\FF[f(t) + g(t)] =  \FF[f(t)] + \FF[g(t)]} 
-\insertequation[\label{eq4}]{\FF[af(t)] = a\FF[f(t)] }
-\\
-\textbf{Una traslacion genera una fase en la Transformada de Fourier.} Para una funcion $f(t)$, se cumple:
+	\item \textbf{A time-shift impart a phase in the fourier Transform.} For a given function $s(t)$, it's satisfied:
+	\insertequation[\label{time-shift}]{\FF[s(t - t_0)] = \FF[s(t)]e^{-2i\pi f t_0}}
 
-\insertequation[\label{eq5}]{\FF[f(t - t_0)] = \FF[f(t)]e^{-2i\pi f t_0} }
-\\
-\textbf{Teorema de la convolusion.} Si bien la convolusion de dos funciones $f(t)$ y $g(t)$, esta definida por:
+	\item \textbf{The Power Spectrum correspond to the square of the absolute value of the Fourier Transform.} This computation allow us to remove the phase and the complex part which is changed to real by the absolute function.
+	
+	\insertequation[\label{psd}]{\mathcal{P}_s = |\FF[s(t)]|^{2}}
+	
+	\item \textbf{Convolution Theorem.} The definition of convolution for two functions $s(t)$ and $h(t)$, is given by:
+	
+	\insertequation[\label{convolution1}]{[s(t) * h(t)] = \int_{-\infty}^{\infty} s(\tau) h(t- \tau) d\tau}
+	
+	Calculating the Fourier Transform of this convolution leads to:
+	
+	\insertequation[\label{convolution2}]{\FF[s * h] = \FF[s] \cdotp \FF[h]}
+	
+	Also, Fourier Transform of a point-wise multiplication of two functions leads to a convolution of Fourier Transforms:
+	
+	\insertequation[\label{convolution3}]{\FF[s \cdotp h)] = \FF[s] * \FF[h]}
+	
+	In practice using Fourier to calculate a convolution is faster than just calculate the convolution, that's why this is a very important concept.
+	
+	\item \textbf{Multiplication theorem.} For a Singal which is a point-wise multiplication of two functions $s(t)$ and $h(t)$, multiplication theorem states:
+	
+	\insertequation[\label{multi}]{\int_{-\infty}^{\infty}s(t)h^*(t)dt = \int_{-\infty}^{\infty}\tilde{s}(f)\tilde{h}^*(f)df}
+	
+	\item \textbf{Correlation.} The cross-correlation of two real signals $s(t)$ and $h(t)$ is defined as:
+	
+	\insertequation[\label{corr1}]{R_{sh}(t) \overset{\Delta}{=} \int_{-\infty}^{\infty} s^{*}(\tau)h(\tau + t)d\tau}
 
-\insertequation[\label{eq6}]{[f * g] = \int_{-\infty}^{\infty} f(t) g(t- \tau) d\tau}
+	\newp Since $s(t)$ is a real signal we have $s^{*}(t) = s(t)$. Also, if we apply the Multiplication Theorem (ec. \ref{multi}) along together with time-shift (ec. \ref{time-shift}) we get:
+	
+	\insertequation[\label{corr2}]{R_{sh} = \int_{-\infty}^{\infty} \tilde{s}(\omega) \tilde{h}^*(\omega)e^{2i\pi \tau}df}
+	
+	\newp This correspond to the Inverse Transform of the Convolution of the two signals (ec. \ref{convolution2})
+	
+	\insertequation[\label{corr3}]{R_{sh} = \FF^{-1}[\FF[s * h]]}
+	
+	\newp A particular behavior is when calculating the auto-correlation of a signal, which correspond to the Inverse Fourier Transform of the Power Spectral Density:
+	
+	 \insertequation[\label{autocorr}]{R_{hh} = \FF^{-1}[|\tilde{h}(f)|^{2}] = \FF^{-1}[\mathcal{P}_h(f)]}
+	 
+\end{description}
 
-\newp Calcular su Transformada de Fourier cumple con:
+\subsection{Some useful Fourier Transforms}{\label{subsec_ftusefull}}
+\begin{description}
+	\item \textbf{Fourier Transform of a Sinusoid is a Delta Function.} \texttt{need to insert a figure in this section}
+	\insertequation[\label{sindelta}]{\FF[Cos(2\pi f_0t)] = \frac{1}{2}[\delta(f - f_0) + \delta(f + f_0)]}
+	
+	\item \textbf{Fourier Transform of a Dicar Comb is a Dirac Comb.} The Dirac Comb is an infinite sequence of Dirac delta function placed at even intervals of size $T$:	
 
-\insertequation[\label{eq7}]{\FF[f * g] = \FF[f] \cdotp \FF[g]}
+	\insertequation[\label{diraccomb}]{III_T(t) = \sum_{n=-\infty}^{\infty} \delta(t-nT)}
+	
+	thus, the fourier Transform correspond to a Dirac Comb in the frequency domain:
+	
+	\insertequation[\label{diracft}]{\FF[III_T(t)] = \frac{1}{T} III_{1/T}(f)}
 
-\newp o tambien se puede aplicar:
+\end{description}
 
-\insertequation[\label{eq8}]{\FF[f \cdotp g)] = \FF[f] * \FF[g]}
-\\
-\textbf{Teorema de la multiplicaci\'on.} Nos dice que, dado funciones $x(t)$ y $y(t)$, su multiplicacion cumple con:
-\insertequation[\label{eq9}]{\int_{-\infty}^{\infty}x(t)y^*(t)dt = \int_{-\infty}^{\infty}\tilde{x}(\omega)\tilde{y}^*(f)df}
-\\
-\textbf{Correlaci\'on.} La correlaci\'on cruzada de dos señales reales $x(t)$ y $y(t)$ esta definida po:
+\subsection{Window Function}{\label{subsec_window}}
+\newp The Continuous Fourier Transform use the particularity that continuous functions are well defined for all times ($-\infty < t < \infty$). This is just an idealization that doesn't work on real signals because this only involve a finite span of time with some finite rate of sampling. The Fourier Transform of a discrete measured data will no longer be just the transform of the continuous underlying function, but rather the transform of the point-wise product of the signal($s(t)$) and the observing window($W(t)$), which will be a rectangular window of dirac comb.
 
-\insertequation[\label{eq10}]{R_{xy}(t) \overset{\Delta}{=} \int_{-\infty}^{\infty} x(\tau)y(\tau - t)d\tau = \int_{-\infty}^{\infty} x(t + \tau)y(\tau)d\tau}
+\insertequation[\label{window1}]{s_{obs}(t) = s(t)W(t)}
 
-\newp Luego, aplicando el teorema de la multiplicaci\'on (\ref{eq9}) junto con la propiedad de traslaci\'on (\ref{eq5}) se obtiene:
+\newp Using the convolution theorem (ec. \ref{convolution3}) the transform of eq. \ref{window1} will be:
 
-\insertequation[\label{eq11}]{R_{xy} = \int_{-\infty}^{\infty} \tilde{x}(\omega) \tilde{y}^*(\omega)e^{2i\pi \tau}df}
+\insertequation[\label{window2}]{\FF[s_{obs}(t)] = \FF[s(t)] * \FF[W(t)]}
 
-\newp Lo cual corresponde a la Transformada inversa de la Transformada de la convolucion de las dos señales (\ref{eq7})
+\subsubsection{Fixing periodicity}{\label{subsubsec_fixperiod}}
 
-\insertequation[\label{eq12}]{R_{xy} = \FF^{-1}[\FF[x * y]]}
+\newp Fourier Transform works only for periodic signals, this means, for signals where its first point has exactly the same value as the last point (continuity in edges). But in real world, a measured signal has always some grade of noise which lead to a discontinuity in the edges. In order to fix this discontinuity we use a window function.
 
-\newp Un resultado particular es la autocorrelaci\'on la cual corresponde a la transformada inversa de la Densidad de Potencial Espectral:
+\newp For these cases, the window function will not be a rectangular, or at least, usualy we don't want to use this kind of window. The most useful windows are kind-of curve like \textit{Hann window}, \textit{Blackmann window} or \textit{Tukey window}. We are going to use mostly the \textit{Tukey window} which is: \texttt{should use a example plot here for all windows.}
 
-\insertequation[\label{eq13}]{R_{xx} = \FF^{-1}[|\tilde{x}(f)|^{2}] = \FF^{-1}[S_x(f)]}
-
-\subsection{La funcion Ventana}
-\newp La transformada de fourier continua cuenta con la particularidad de que las funciones continuas esten bien definidas para todos los tiempos ($-\infty < t < \infty$). Esto es una idealizacion que no ocurre en señales reales devido a que solo son medidas en intervalos finitos de tiempo, con una frequencia de sampleo finita (no necesariamente constante). El ejemplo mas directo es que una señal continua medida en un intervalo de tiempo es igual a aplicar una ventana rectangular a la señal teorica medida en todos los tiempos.
-\newp Luego, la transformada de Fourier pasa de ser una transformacion de la funcion continua a la transformacion del producto elemento a elemento entre la señal y la ventaba observada.
-
-\insertequation[\label{eq14}]{g_{obs}(t) = g(t)W(t)}
-
-\newp Usando el teorema de la convoluci\'on (\ref{eq8}), la transformada correspondera a la convoluci\'on de transformadas.
-
-\insertequation[\label{eq15}]{\FF[q_{obs}(t)] = \FF[g(t)] * \FF[W(t)]}
-
-\newp Una aplicacion importante es usar ventanas que permitan reducir discontinuidad en los bordes de observacion, esto es necesario porque observar señales reales nunca entregara una periodicidad perfecta y tener discontinuidad afecta negativamente a los resultados que se puedan obtener de la transformada. Exsisten varios tipos de ventanas que se pueden aplicar, entre ellas, \textit{Hann}, \textit{Tukey}, \textit{Blackmann}. La que se utilizara en esta ocacion es \textit{Tukey} que corresponde a:
-
-\insertequation[\label{eq16}]{w(n) = \begin{cases}
+\insertequation[\label{tukey}]{w(n) = \begin{cases}
 \frac{1}{2} \left[1 + cos\left(\pi \left(\frac{2n}{\alpha (N-1} - 1  \right) \right) \right] & 0 \leq n < \frac{\alpha(N-1)}{2} \\
 1 & \frac{\alpha(N-1)}{2} \leq n \leq (N-1)(1-\frac{\alpha}{2})\\
 \frac{1}{2} \left[1 + cos\left(\pi \left(\frac{2n}{\alpha (N-1} - \frac{2}{\alpha} +  1  \right) \right) \right] & (N-1)(1 - \frac{\alpha}{2} < n \leq (N-1))
 \end{cases}}
 
-\newp Donde el factor $\alpha$ define la forma, cuando $\alpha=0$ se transforma en una ventana rectangular y para $\alpha=1$ se transforma en una venta de \textit{Hann}
+\newp Here, $\alpha$ define the form of the window, when $\alpha=0$ we get a rectangular window and for $\alpha=1$ we get a \textit{Hann window}.
+\subsection{Nyquist-Shannon Sampling Theorem}{\label{subsec_NSST}}
+\newp sampling is a process of converting a signal (function-like of continuous time and/or space) into a numeric sequence, thus the sampling theorem states that, if a function $f(x)$ contains no frequencies higher than B hertz, it is completely determined by givin its ordinates at a series of points spaced $1/(2B)$ seconds apart. This means that a suficient sample-rate for uniform sampling is therefore anything larget than $2B$ samples per second, or from other perspective, for a given sample rate $f_s$, \textbf{perfect reconstruction is guaranteed possible} for a bandlimit $B < f_s/2$.
+
+\newp In the most general case of nonuniform sampling, this theorem states that a band-limited signal can be perfectly reconstructed from its samples if the \textbf{average sampling rate} satisfies the Nyquist condition. this means that even if uniformly spaced samples can be easier reconstruced (easier algorithms), it is not a necessary condition for perfect reconstruction.
+
+\subsection{Nyquist frequency}{\label{subsec_nyqfreq}}
+\newp The nyquist frequency is defined as half of the sampling rate  of a discrete signal when we have evenly-sampled data
+
+\insertequation[\label{nyq1}]{\nu_N = 0.5 f_s}
+
+\newp And correspond to the highest frequency limit of one interval over which a periodogram is uniquely defined. If we go far away from this nyquist limit, the periodogram (and the simple Fourier Transform) will have repeated information. 
+
+\newp For unevenly-sampled data, the symmetry that allow to define this frequency as eq. \ref{nyq1} is broken and using an average sampling rate as in the Sampling Theorem doesn't work. In order to find a best approximation to the real nyquist frequency (called \textit{pseudo-nyquist frequency}) there are several methods in literature. The one implemented here correspond to the method delevoped by Koen who give a calculation formula to be solved for the nyquist frequency for arbitrary time spacing of measurements, this is the smallest positive root of
+
+\insertequation[\label{koen1}]{SS(\nu) = \sum_{l=1}^{N-1}\sum_{k=l+1}^{N} [sin 2 \pi \nu (t_k - t_l)]^2 = 0}
+
+\newp This calculation will take $O(N_{\nu}N^2)$ where $N_{\nu}$ correspond to the number of frequencies to try in the formula. Since is a very expensive calculation, generaly it is more useful to know what is the maximum frequency that we are interested in.
+
+\subsection{Discrete Fourier Transform}{\label{subsec_dft}}
+\newp We can pass from cotinuous space to discrete space by applying a Rectangular Window with a dirac comb (eq. \ref{window2}) This is because the delta serve to collapse the Fourier Integral into a Fourier Sum. Considering the most general case, where a continuous signal $s(t)$ is observed at an \textbf{irregular grid} of size $N_t$, leads to dirac comb:
+
+\insertequation[\label{irr-dirac-comb}]{III_{\{t_j\}}(t) = \sum_{j = 1}^{N_t} \delta(t - t_j)}
+
+\newp Using this, the direct transform will be:
+
+\insertequation[\label{to-discrete1}]{
+\begin{aligned}[b]
+\FF[s_{obs}(t)] = \tilde{s}_{k} & = \FF[s(t){III}_{\{t_j\}}(t)]  \\
+\tilde{s}_{k} & = \int_{-\infty}^{\infty}s(t)\sum_{j = 2}^{N_t} \delta(t - t_j) e^{-2\pi i f t} dt \\
+\tilde{s}_{k} & = \sum_{j = 1}^{N_t}\int_{-\infty}^{\infty}s(t)\delta(t - t_j) e^{-2\pi i f t} dt  \\
+\tilde{s}_{k} & = \sum_{j = 1}^{N_t} s_je^{-2\pi i t_j k \Delta f}
+\end{aligned}
+}
+
+\newp Following the same idea we can get the inverse transform, considering that the \textbf{frequencies will always be in a regular grid} so $f_k = k \Delta f$:
+
+\insertequation[\label{to_discrete2}]{s_j = \Delta f \sum_{k = 1}^{N_f} \tilde{s}_k e^{2 \pi i t_j k \Delta f}}
+
+\newp the total number of frequencies ($N_f$) and how we define the $\Delta f$ will be explained more clearly in the next sections.
+
+\subsection{Frequency Sampling}{\label{subsec_freqsampling}}
+\newp Since we are considering the most general case of Fourier Transform for non-uniform sampling, it's neccessary to define clearly the frequency grid, more precisely we need to define the the frequency limit on the low end and the high end, in addition to define the grid spacing.
+\begin{description}
+
+\item \textbf{low-end frequency limit.} For a set of observations in a time interval of lenght $T$, a signal with frequency $1/T$ will complete exactly one oscillation in the observing window. Chosing a low-end frequency limit could be this frequency or just set the minimum frequency to zero for simplicity. Also is posible to give a custom low-end limit based on what frequencies we want to explore.
+
+\item \textbf{high-end frequency limit.} In order to not miss information that could be relevant, it's neccessary to look for the maximum frequency that could give us information, this is given by the nyquist frequency defined in section \ref{subsec_nyqfreq}. Also is posible to give a custom high-end limit based on what frequencies we want to explore.
+
+\item \textbf{grid spacing.} Choose the correct grid spacing it's also an important point, if we use a too fine grid will leads to unnecessarily long computational times, while, use a grid too coarse leads to missing narrow peaks that fall between grid points. A razonable idea is to choose grid spacing smaller than the spected width of the periodogram peaks, these peaks has a widht of $\sim 1/T$ where $T$ is the duration of the window function. To ensure that our grid sufficiently samples each peak, we can over-sample by some factor ($n_0$) using a grid spacing of
+
+\insertequation[\label{grid-spacing}]{\Delta f = \frac{1}{n_0 T}}
+
+\newp And with this we can know the total number of frequencies to evaluate
+
+\insertequation[\label{n-frequencies}]{N_f = n_0 T f_{max}}
+
+\newp choose the value of $n_0$ is kind-of arbitrary and we can find uses in literature in the range of $n_0 = 5$ to $n_0 = 10$.
+
+\end{description}
+
+\section{Fast Fourier Transform}
+\newp The normal Discrete Fourier Transform showed in section \ref{subsec_dft} takes times $O(N^2)$ to compute wheter is the direct or the inverse transform, this is a very expensive computation and can be improved to $O(N log(N))$ usign the algorithm of the Fast Fourier Transform(FFT). \texttt{NEED TO READ MORE ABOUT THE ALGORITHM}
+\subsection{Non-uniform Fast Fourier Transform}
+\newp The same idea used in the optimization of the Discrete Fourier Tranform for evenly-sampled data called FFT can be used for unevnely-sampled data and we call this Non-unifor Fast Fourier Transform, using the same considerations. \texttt{NEED TO EXPLORE MORE THE ALGORITHM}
+\section{Fourier Transform as Signal Decomposition}
+\subsection{What is a Signal Decomposition?}
+\newp given a signal $s \in \mathbb{R}^{N}$ we want to find a representative set of coeficients $\beta \in\mathbb{R}^{M}$ such that:
+
+\insertequation[\label{signaldecom1}]{\hat{s} = \Phi \hat{\beta}}
+
+\newp Where $\Phi \in \mathbb{R}^{N \times M}$ is known as the dictionary matrix. Every column of this dictionary matrix correspond to an \textit{atom}, i.e. the constituents of signal $s$. This dictionary is called \textit{complete} when $M = N$. This dictionary can be either pre-defined or learned from data. We will select the atoms previously, for example, in a Fourier Dictionary we choose the atoms by knowing what frequencies we want.
+\newp Solve eq. \ref{signaldecom1} for a complete dictionary that is invertible means find $\hat{\beta}^{*}$ such that:
+
+\insertequation[\label{signaldecom2}]{\hat{\beta}^{*} = \Phi^{-1} \hat{s}}
+
+\newp When the matrix is not invertible, the solution to eq. \ref{signaldecom1} is obtained by solving the  Least Square problem:
+
+\insertequation[\label{leastsquare}]{\underset{\hat{\beta}}{\text{min}} \frac{1}{2} \| \hat{s} - \Phi\hat{\beta} \|^{2}_{2}}
+
+\newp Where $\| \cdotp \|_{2}^{2}$ means the square of the L2-norm, the solution to this problem is:
+
+\insertequation[\label{pseudoinv1}]{\hat{\beta}^{*} = (\Phi^{T}\Phi)^{-1}\Phi^{T} \hat{s}}
+
+\newp Which requieres $(\Phi^{T}\Phi)$ to be invertible, means, having linear independent columns. Te matrix $(\Phi^{T}\Phi)^{-1}\Phi^{T}$ correspond to the left Moore-Penrose pseudo-inverse of $\Phi$.
+
+\newp Then complete dictionary is not often the better dictionary, here we are more interested in the overcomplete dictionary, this is a dictionary with more atoms than data samples ($M > N$). For overcomplete dictionaries (\ref{signaldecom1}) is under-determined and many solutions may exists. When $\Phi$ is overcomplete, the product $(\Phi^{T}\Phi)$ is always a singular matrix and then (\ref{pseudoinv1}) cannot be compute. In order to get an optimal its neccessary to include a regularization coeficient which impose conditions to help choose one of the many solutions of the underdetermined system. There are two kind of regularization usualy used, one is smooth-ness and the other is spartisy, the first refers to the least-rough or least-complex solution this condition usualy leads to dense solutions with almost all points non-zeros, and the second one refeers to solution with less non-zero points and thus a more sparse solution. here we will show many method that try to find a good $\beta$.
+
+\subsubsection{Ridge Regression}
+\newp this is an example of a regression that use as regularization smooth-ness, the ridge regression is defined as:
+
+\insertequation[\label{ridge1}]{\underset{\hat{\beta}}{\text{min}}\alpha \| \beta \|^{2}_{2} + \| s - \Phi \beta \|_{2}^{2}}
+
+\newp Where $\alpha > 0$ is the trade-off between reconstruction error and smooth-ness of the solution. Te solution to \ref{ridge1} is:
+
+\insertequation[\label{ridge2}]{\beta^{*} = (\Phi^{T}\Phi + \alpha I)^{-1}\Phi^{T}s}
 
 
-%el dominio del tiempo representandola en el dominion de frequencias o vice versa. Esto nos permite obtener para una señal \textbf{periodica} discreta $s(t)$, una descomposici\'on dada por:
 
-%\insertequation[]{s_P(t) = \frac{1}{N}\sum_k S[k]\cdotp e^{2i\pi\frac{kt}{NT}} = \frac{1}{T}\sum_k S_{\frac{1}{T}} \left(\frac{k}{P}\right) \cdotp e^{2i\pi \frac{kt}{NT}}}  
 
-%\newp En donde $P$ es el periodo de la señal y $S[k]$ es el coeficiente de fourier representando el valor de la descomposicion para la k-esima frequencia. Los coeficientes de fourier son tambien conocidos como la Tansformada inversa de Fourier y estaran dados por:
-%\insertequation[]{\frac{1}{T} S = \frac{1}{P}\int_{t_0}^{t_0 + P} x(t)e^{-2i\pi \frac{n}{P} t }dt}
 
-%\newp Lo que para una señal discreta se traduce en:
-%\insertequation[]{x_j = \sum_{k =  \frac{f_{min}}{df}}^{\frac{f_{max}}{df}} c_j e^{2i\pi\frac{j}{P} t}}
-%\insertequation[]{c_k = \frac{1}{P}\sum_{j = t_{min}}^{t_{min} + P} x_j e^{2i\pi\frac{k}{P} j}}
+\newp The discrete Fourier Transform descrived in section \ref{subsec_dft} can be interpreted as a change of basis of the signals which means change the time representation of the signal $\vec{s}$ to a frequency representation $vec{\beta}$ using a sine/cose basis. This will means that we can write:
 
+\insertequation[\label{signaldecomp1}]{\vec{s} = \Phi \cdotp \vec{\beta}}
+
+\newp Where $\Phi$ is the Dictionary/Basis to use in the change of representation. This Dictionary is the Fourier Matrix where every colummn (atom $\phi$) correspond to a sine/cosine wave of a given frequency $k\Delta f$:
+
+\insertequation[\label{signaldecomp2}]{\phi_k = e^{2 \pi i t_j k \Delta f} \forall t_j}
+
+ \newp and in order to represent Direct and Inverse Fourier Transform Correctly it's neccessary to use an orthogonal Basis which means an square matrix Dictionary with a defined Inverse, if this matrix is defined correctly (ofter in the evenly-sampled case) his adjoint will be his inverse in a way that allow us to define the Adjoint Transform and use it as the Inverse Transform.
  
-%\newp El Trabajo realizado se basa en las propiedades que entrega la transformada de fourier para facilitar encontrar correlacion entre dos tipos de señales.Esto nace desde la propiedad de la convoluci\'on de dos señales. Esta convolusion viene definida por 
-		
+ \insertequation[\label{signaldecom3}]{\vec{\beta} = \Phi^{T} \cdotp \vec{s}}
+ 
+\newp Sadly for unevenly-sampled data we usually need to compute a frequency grid higher than the time grid producing a oversampling Dictionary, and even if we choose the same number of frequencies than times, there is no guarantee that the resulting Fourier Matrix will be unitary and invertible in a way that his adjoint transform be his Inverse Transform. Because of this, we need to look for a way to compute the Pseudo-inverse if the dictionary ($\Phi^{+}$) instead of the Inverse, usualy we can compute this by Single Value Decompostion, where the left decomposition (known as ):
+
+\insertequation[\label{pseudoinverse}]{\Phi^{+}}
+
+\section{Expresing Fourier Transform as Matrix}{\label{subsec_ftmatrix}}
+
+\newp The transform descrived in ec. \ref{to-discrete1} and \ref{to_discrete2} can be represented matricialy. Here the signal $s(t)$ will be a vector $\vec{s}$ and the Fourier Transform will be the product of this vector with the fourier matrix $\Phi^{N_f \times N_t}$ where $\Phi_{jk} = e^{2 \pi i t_j k \Delta f}$, here the .
+
+\insertequation[\label{matrix-transform1}]{(\vec{s})_j = \sum_{j = 0}^{N_t} s_j e^{2 \pi i t_j k \delta f = F \cdotp \vec{s}}}   
+
+
+
+\section{Matched Filter}
+\newp Matched filter correspond to find the optimal linear filter for maximizing the Signal To Noise Ratio (SNR) in the presence of additive stochastic noise. For this we considere some data $s(t)$ with finite-energy which can be only Gaussian noise $s(t) = n(t)$ or a signal in addition to the noise $s(t) = n(t) + h(t)$, that are the input to a filter with impulse response $h(t)$, and produces the output signal given by the conovlution:
+
+\insertequation[\label{mf_base}]{y(\tau) = \int_{-\infty}^{\infty} s(\tau - t)h(t)dt}
+
+\newp Here the impulse response $h(t)$ correspond to the time reverse of the template
+
+\newp When we want to know if some data contain or not a well-known signal, the best method to use, if the data has stationary and Gaussian noise, is the Matched Filter. This method consis of, for a data which is noise plus some underlying signal $x(t) = s(t) + n(t)$, we whan to check, if this underlying singal $s(t)$ correspond to some well-known template $h(t)$. For this we estimate a Signal-to-Noise Ratio calculating the convolution of the data with the desired template divided by the self correlation of the noise knowed as Power Spectral Density. As we seen in section \ref{sec_ft}, the convolution of two signal can be expresedeasly in terms of fourier Transform. The most general definition of Matched Filter is:
+
+\insertequation[\label{int_mf}]{\chi(t_0) = 2\int_{-\infty}^{\infty} \frac{\tilde{s}(f)\tilde{h}^{*}(f)}{\mathcal{P}_n(f)} df}
+
+\newp Where $\tilde{s}(f)$ and $\tilde{h}(f)$ are the Fourier Transform and $\mathcal{P}_n(f)$ is the One-Sided Power Spectral Density of the noise.
+
+\insertequation[\label{onesidedpsd}]{\mathcal{P}_n()}
