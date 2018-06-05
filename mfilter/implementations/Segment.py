@@ -1,6 +1,7 @@
 import numpy as np
 import pdb
 
+
 class DataSegment:
     def __init__(self, t, y, t_segment=None, overlap_factor=None):
         self.t, self.y = self._validate_data(t, y)
@@ -43,7 +44,7 @@ class DataSegment:
 
         if segment_number + 1 > self.n_segment:
             raise ValueError("input segment_number cannot be higher "
-                             "than {}".format(self.n_segment-1))
+                             "than {}".format(self.n_segment - 1))
         if segment_number < 0:
             raise ValueError("input segment_number cannot be less than 0")
 
@@ -55,14 +56,20 @@ class DataSegment:
         else:
             return start_at_time, end_at_time
 
+    def _normalized_time_Segment(self, idx_start, idx_end):
+        return self.t[idx_start:idx_end + 1] - self.t[idx_start]
+
     def compute_segment(self, segment_number: int = None):
         # pdb.set_trace()
         self.check_segment_number(segment_number)
         start_at_time = segment_number * self.stride
         start_at_time, end_at_time = self._end_time(start_at_time)
+
         idx_start = np.argmin(np.abs(self.t - start_at_time + min(self.t)))
         idx_end = np.argmin(np.abs(self.t - end_at_time + min(self.t)))
-        return self.t[idx_start:idx_end+1], self.y[idx_start:idx_end+1]
+
+        return (self._normalized_time_Segment(idx_start, idx_end)), \
+               (self.y[idx_start:idx_end + 1])
 
     def set_segment_number(self, segment_n=None):
         if segment_n is None:
@@ -75,5 +82,3 @@ class DataSegment:
                              "maximum segment allowed " +
                              "is {}".format(self.n_segment))
         return segment_n
-
-
