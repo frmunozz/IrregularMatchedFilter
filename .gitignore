@@ -12,3 +12,7 @@ __pycache__/
 *.lol
 *.toc
 *.synctex.gz
+*.bbl
+*.bcf
+*.blg
+*.run.xml
