@@ -13,7 +13,7 @@ class Templates:
             template_type = 'one_sin_default'
             self.prm = {'default': True}
 
-        elif template_type == 'one_sin':
+        elif 'sin' in template_type:
             if any([x not in prm for x in ['freq', 'weight']]):
                 raise ValueError("for template type 'one_sin', kwargs" +
                                  "must contain keys " +
