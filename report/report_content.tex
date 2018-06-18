@@ -14,37 +14,45 @@
 
 % define some usefull commands
 \newcommand\FF{\mathcal{F}}
-
+\newcommand\prd{Phys. Rev. D}
+\newcommand\MF{\text{MF}}
+\newcommand\IL{\int_{-\infty}^{\infty}}
+\newcommand\WM{\text{WMF}}
+\newcommand\wmf[2]{(#1|#2_{\MF})^{\WM}_{t_0}}
 % NUEVA SECCIÓN
-\section{Introduction}{\label{sec_intro}}
+\section{Introduction}{\label{sec:intro}}
 \newp por definir.
 
-\section{Fourier Transform}{\label{sec_ft}}
-\newp The Fourier Transform it's a Mathematical toll that allow us to decompone singals by a given dictionary or in other words, to apply a change of basis to a given signal. Thinking on a continuous signal $s(t)$, it's Fourier Transform is given by the following integral, where $i =  \sqrt{-1}$ denotes the imaginary unit:
-\insertequation[\label{ft}]{\tilde{s}(f) = \int_{-\infty}^{\infty} s(t)e^{-2i\pi f t} dt = \FF[s(t)]}
+\section{Fourier Transform}{\label{sec:ft}}
+\newp The Fourier Transform it's a Mathematical tool that allow us to decompone singals by a given dictionary or in other words, to apply a change of basis to a given signal. Thinking on a continuous space for a signal $s(t)$, it's Fourier Transform is given by the following integral, where $i =  \sqrt{-1}$ denotes the imaginary unit:
+\insertequation[\label{ft:ft}]{\tilde{s}(f) = \int_{-\infty}^{\infty} s(t)e^{-2i\pi f t} dt = \FF[s(t)]}
 
 \newp And the inverse transform is:
 
-\insertequation[\label{ift}]{s(t) = \int_{-\infty}^{\infty} \tilde{s}(f)e^{2i\pi f t } df = \FF^{-1}[\tilde{s}(f)]}
+\insertequation[\label{ft:ift}]{s(t) = \int_{-\infty}^{\infty} \tilde{s}(f)e^{2i\pi f t } df = \FF^{-1}[\tilde{s}(f)]}
 
-\subsection{Properties of the Fourier Transform}{\label{subsec_propft}}
+\subsection{Properties of the Fourier Transform}{\label{sec:ft::subsec:propft}}
 \newp Some usefull properties of the Fourier Transform are:
 	\begin{description}
 	
 	\item \textbf{Fourier Transform is a linear operator}. This means that, given a constant $a$ and 		functions $s(t)$, $h(t)$, we can write:
-	\insertequation[\label{linear1}]{\FF[s(t) + h(t)] =  \FF[s(t)] + \FF[h(t)]} 
-	\insertequation[\label{linear2}]{\FF[as(t)] = a\FF[s(t)] }
+	\insertequation[\label{propFT:linear1}]{\FF[s(t) + h(t)] =  \FF[s(t)] + \FF[h(t)]} 
+	\insertequation[\label{propFT:linear2}]{\FF[as(t)] = a\FF[s(t)] }
 
 	\item \textbf{A time-shift impart a phase in the fourier Transform.} For a given function $s(t)$, it's satisfied:
-	\insertequation[\label{time-shift}]{\FF[s(t - t_0)] = \FF[s(t)]e^{-2i\pi f t_0}}
+	\insertequation[\label{propFT:time-shift}]{\FF[s(t - t_0)] = \FF[s(t)]e^{-2i\pi f t_0}}
+	
+	\newp also can be obtained a conjugate of the transform by:
+	
+	\insertequation[\label{propFT:time_shift2}]{\FF[s(t_0 - t)] = \FF[s(t)]^{*}e^{-2\pi f t_0}}
 
-	\item \textbf{The Power Spectrum correspond to the square of the absolute value of the Fourier Transform.} This computation allow us to remove the phase and the complex part which is changed to real by the absolute function.
+	\item \textbf{The Power Spectrum equal to square of absolute value of the Fourier Transform.} This computation allow us to remove the phase and the complex part which is changed to real by the absolute function.
 	
 	\insertequation[\label{psd}]{\mathcal{P}_s = |\FF[s(t)]|^{2}}
 	
 	\item \textbf{Convolution Theorem.} The definition of convolution for two functions $s(t)$ and $h(t)$, is given by:
 	
-	\insertequation[\label{convolution1}]{[s(t) * h(t)] = \int_{-\infty}^{\infty} s(\tau) h(t- \tau) d\tau}
+	\insertequation[\label{convolution1}]{[s(t) * h(t)] = [h(t) * s(t)] = \int_{-\infty}^{\infty} s(t-\tau) h(\tau) d\tau}
 	
 	Calculating the Fourier Transform of this convolution leads to:
 	
@@ -52,29 +60,41 @@
 	
 	Also, Fourier Transform of a point-wise multiplication of two functions leads to a convolution of Fourier Transforms:
 	
-	\insertequation[\label{convolution3}]{\FF[s \cdotp h)] = \FF[s] * \FF[h]}
+	\insertequation[\label{convolution3}]{\FF[s(t) \cdotp h(t)](f) = \FF[s](f) * \FF[h](f)}
 	
 	In practice using Fourier to calculate a convolution is faster than just calculate the convolution, that's why this is a very important concept.
 	
-	\item \textbf{Multiplication theorem.} For a Singal which is a point-wise multiplication of two functions $s(t)$ and $h(t)$, multiplication theorem states:
+	\item \textbf{Parseval's Formula}, it says that for $s(t)$ and $h(t)$ square-integrable functions with fourier transforms given by (\ref{ft:ift}) and (\ref{ft:ft}), it's satisfied:
 	
-	\insertequation[\label{multi}]{\int_{-\infty}^{\infty}s(t)h^*(t)dt = \int_{-\infty}^{\infty}\tilde{s}(f)\tilde{h}^*(f)df}
+	\insertequation[\label{parseval}]{\int_{-\infty}^{\infty} s(t)h^{*}(t)dt = \int_{-\infty}^{\infty}\tilde{s}(f)\tilde{h}^{*}(f) df}
 	
-	\item \textbf{Correlation.} The cross-correlation of two real signals $s(t)$ and $h(t)$ is defined as:
+	 \item \textbf{Plancherel Theorem}, it's a direct consecuence of the Parseval Formula but in the sence of energy:
+	 
+	 \insertequation[\label{plancherel}]{\int_{-\infty}^{\infty} \mid x(t) \mid^{2} (t)dt = \int_{-\infty}^{\infty}\mid \tilde{s}(f)\mid^{2} df} 	
 	
-	\insertequation[\label{corr1}]{R_{sh}(t) \overset{\Delta}{=} \int_{-\infty}^{\infty} s^{*}(\tau)h(\tau + t)d\tau}
-
-	\newp Since $s(t)$ is a real signal we have $s^{*}(t) = s(t)$. Also, if we apply the Multiplication Theorem (ec. \ref{multi}) along together with time-shift (ec. \ref{time-shift}) we get:
+	\item \textbf{Correlation.} The cross-correlation of two real signals $s(t)$ and $h(t)$ can be defined in the sense of a convolution by:
 	
-	\insertequation[\label{corr2}]{R_{sh} = \int_{-\infty}^{\infty} \tilde{s}(\omega) \tilde{h}^*(\omega)e^{2i\pi \tau}df}
+	\insertequation[\label{corr_as_conv}]{R_{hs}(t) = h \star s = h^{*}(-t) \ast s(t) = s(t) \ast h^{*}(-t)}
 	
-	\newp This correspond to the Inverse Transform of the Convolution of the two signals (ec. \ref{convolution2})
+	\newp We are more interested in real signals when $s^{*}(-t) = s(-t)$ but the calculations will be in the general case. Using (\ref{convolution1}) we get:
 	
-	\insertequation[\label{corr3}]{R_{sh} = \FF^{-1}[\FF[s * h]]}
+	\insertequation[\label{corr1}]{R_{hs}(t) = \int_{-\infty}^{\infty} s(\tau - t) h^{*}(-t) dt}
+	
+	\newp Applying a simple change of variables($t \longrightarrow -t$) we get:
+	
+	\insertequation[\label{corr2}]{R_{hs}(t) = \int_{-\infty}^{\infty} s(\tau + t)h^{*}(t) dt}
+	
+	\newp Using the Time shift property (\ref{propFT:time-shift}) with the Parseval's Formula (\ref{parseval}):
+	
+	\insertequation[\label{corr3}]{R_{hs}(t) = \int_{-\infty}^{\infty} \tilde{s}(f)\tilde{h}^{*}(f)e^{2i\pi f \tau} df}
+	
+	\newp And this can be resumed as Fouriers Transforms:
+	
+	\insertequation[\label{corr4}]{R_{hs}(t) = \FF^{-1}[\FF[s] \FF[h]^{*}] = \FF^{-1}[\FF[s(t) \star h^{*}(-t)]]}
 	
 	\newp A particular behavior is when calculating the auto-correlation of a signal, which correspond to the Inverse Fourier Transform of the Power Spectral Density:
 	
-	 \insertequation[\label{autocorr}]{R_{hh} = \FF^{-1}[|\tilde{h}(f)|^{2}] = \FF^{-1}[\mathcal{P}_h(f)]}
+	 \insertequation[\label{autocorr}]{R_{hh} = \FF^{-1}[\mid \tilde{h}(f)\mid^{2}] = \FF^{-1}[\mathcal{P}_h(f)]}
 	 
 \end{description}
 
@@ -118,7 +138,7 @@
 \subsection{Nyquist-Shannon Sampling Theorem}{\label{subsec_NSST}}
 \newp sampling is a process of converting a signal (function-like of continuous time and/or space) into a numeric sequence, thus the sampling theorem states that, if a function $f(x)$ contains no frequencies higher than B hertz, it is completely determined by givin its ordinates at a series of points spaced $1/(2B)$ seconds apart. This means that a suficient sample-rate for uniform sampling is therefore anything larget than $2B$ samples per second, or from other perspective, for a given sample rate $f_s$, \textbf{perfect reconstruction is guaranteed possible} for a bandlimit $B < f_s/2$.
 
-\newp In the most general case of nonuniform sampling, this theorem states that a band-limited signal can be perfectly reconstructed from its samples if the \textbf{average sampling rate} satisfies the Nyquist condition. this means that even if uniformly spaced samples can be easier reconstruced (easier algorithms), it is not a necessary condition for perfect reconstruction.
+\newp In the most general case of non-uniform sampling, this theorem states that a band-limited signal can be perfectly reconstructed from its samples if the \textbf{average sampling rate} satisfies the Nyquist condition. this means that even if uniformly spaced samples can be easier reconstruced (easier algorithms), it is not a necessary condition for perfect reconstruction.
 
 \subsection{Nyquist frequency}{\label{subsec_nyqfreq}}
 \newp The nyquist frequency is defined as half of the sampling rate  of a discrete signal when we have evenly-sampled data
@@ -127,14 +147,14 @@
 
 \newp And correspond to the highest frequency limit of one interval over which a periodogram is uniquely defined. If we go far away from this nyquist limit, the periodogram (and the simple Fourier Transform) will have repeated information. 
 
-\newp For unevenly-sampled data, the symmetry that allow to define this frequency as eq. \ref{nyq1} is broken and using an average sampling rate as in the Sampling Theorem doesn't work. In order to find a best approximation to the real nyquist frequency (called \textit{pseudo-nyquist frequency}) there are several methods in literature. The one implemented here correspond to the method delevoped by Koen who give a calculation formula to be solved for the nyquist frequency for arbitrary time spacing of measurements, this is the smallest positive root of
+\newp For unevenly-sampled data, the symmetry that allow to define this frequency as eq. \ref{nyq1} is broken and using an average sampling rate as in the Sampling Theorem doesn't work. In order to find a best approximation to the real nyquist frequency (called \textit{pseudo-nyquist frequency}) there are several methods in literature. The one implemented here correspond to the method delevoped by Koen \cite{koen-nyqFreq} who give a calculation formula to be solved for the nyquist frequency for arbitrary time spacing of measurements, this is the smallest positive root of
 
 \insertequation[\label{koen1}]{SS(\nu) = \sum_{l=1}^{N-1}\sum_{k=l+1}^{N} [sin 2 \pi \nu (t_k - t_l)]^2 = 0}
 
 \newp This calculation will take $O(N_{\nu}N^2)$ where $N_{\nu}$ correspond to the number of frequencies to try in the formula. Since is a very expensive calculation, generaly it is more useful to know what is the maximum frequency that we are interested in.
 
 \subsection{Discrete Fourier Transform}{\label{subsec_dft}}
-\newp We can pass from cotinuous space to discrete space by applying a Rectangular Window with a dirac comb (eq. \ref{window2}) This is because the delta serve to collapse the Fourier Integral into a Fourier Sum. Considering the most general case, where a continuous signal $s(t)$ is observed at an \textbf{irregular grid} of size $N_t$, leads to dirac comb:
+\newp We can pass from cotinuous space to discrete space by applying a Rectangular Window with a dirac comb (eq. \ref{window2}) This is because the delta serve to collapse the Fourier Integral into a Fourier Sumatory. Considering the most general case, where a continuous signal $s(t)$ is observed at an \textbf{irregular sampling} of size $N_t$, leads to dirac comb:
 
 \insertequation[\label{irr-dirac-comb}]{III_{\{t_j\}}(t) = \sum_{j = 1}^{N_t} \delta(t - t_j)}
 
@@ -156,10 +176,10 @@
 \newp the total number of frequencies ($N_f$) and how we define the $\Delta f$ will be explained more clearly in the next sections.
 
 \subsection{Frequency Sampling}{\label{subsec_freqsampling}}
-\newp Since we are considering the most general case of Fourier Transform for non-uniform sampling, it's neccessary to define clearly the frequency grid, more precisely we need to define the the frequency limit on the low end and the high end, in addition to define the grid spacing.
+\newp Since we are considering the most general case of Fourier Transform for non-uniform sampling, it's neccessary to define clearly the frequency grid, more precisely we need to define the frequency limit on the low end and the high end, in addition to define the grid spacing.
 \begin{description}
 
-\item \textbf{low-end frequency limit.} For a set of observations in a time interval of lenght $T$, a signal with frequency $1/T$ will complete exactly one oscillation in the observing window. Chosing a low-end frequency limit could be this frequency or just set the minimum frequency to zero for simplicity. Also is posible to give a custom low-end limit based on what frequencies we want to explore.
+\item \textbf{low-end frequency limit.} For a set of observations in a time interval of lenght $T$, a signal with frequency $1/T$ will complete exactly one oscillation in the observing window. Chosing a low-end frequency limit could be this frequency or just set the minimum frequency to zero for simplicity. Also is posible to give a custom low-end limit based on what frequencies we want to explore. If we have complex signals we will ned to define a negative low-end frequency limit.
 
 \item \textbf{high-end frequency limit.} In order to not miss information that could be relevant, it's neccessary to look for the maximum frequency that could give us information, this is given by the nyquist frequency defined in section \ref{subsec_nyqfreq}. Also is posible to give a custom high-end limit based on what frequencies we want to explore.
 
@@ -169,23 +189,27 @@
 
 \newp And with this we can know the total number of frequencies to evaluate
 
-\insertequation[\label{n-frequencies}]{N_f = n_0 T f_{max}}
+\insertequation[\label{n-frequencies}]{N_f = n_0 T (f_{max} - f_{min})}
 
-\newp choose the value of $n_0$ is kind-of arbitrary and we can find uses in literature in the range of $n_0 = 5$ to $n_0 = 10$.
+\newp choose the value of $n_0$ is kind-of arbitrary and we can find uses in literature in the range of $n_0 = 5$ to $n_0 = 10$ \cite{vanderplas-lombScargle}.
 
 \end{description}
 
 \section{Fast Fourier Transform}
 \newp The normal Discrete Fourier Transform showed in section \ref{subsec_dft} takes times $O(N^2)$ to compute wheter is the direct or the inverse transform, this is a very expensive computation and can be improved to $O(N log(N))$ usign the algorithm of the Fast Fourier Transform(FFT). \texttt{NEED TO READ MORE ABOUT THE ALGORITHM}
+
 \subsection{Non-uniform Fast Fourier Transform}
 \newp The same idea used in the optimization of the Discrete Fourier Tranform for evenly-sampled data called FFT can be used for unevnely-sampled data and we call this Non-unifor Fast Fourier Transform, using the same considerations. \texttt{NEED TO EXPLORE MORE THE ALGORITHM}
+
 \section{Fourier Transform as Signal Decomposition}
+\newp An alternative approach to realize the Fourier Transfrom is to do a Signal Decomposition by regression, here we just take our data and find what coeficients give the best fit to the original data given a Dictionary which can be interpreted as a change of basis, if we use for the Dictionary the fourier Matrix, then the coeficients of the signal decomposition will be the values of the Fourier Transform.
+
 \subsection{What is a Signal Decomposition?}
 \newp given a signal $s \in \mathbb{R}^{N}$ we want to find a representative set of coeficients $\beta \in\mathbb{R}^{M}$ such that:
 
 \insertequation[\label{signaldecom1}]{\hat{s} = \Phi \hat{\beta}}
 
-\newp Where $\Phi \in \mathbb{R}^{N \times M}$ is known as the dictionary matrix. Every column of this dictionary matrix correspond to an \textit{atom}, i.e. the constituents of signal $s$. This dictionary is called \textit{complete} when $M = N$. This dictionary can be either pre-defined or learned from data. We will select the atoms previously, for example, in a Fourier Dictionary we choose the atoms by knowing what frequencies we want.
+\newp Where $\Phi \in \mathbb{R}^{N \times M}$ is known as the dictionary matrix. Every column of this dictionary matrix correspond to an \textit{atom}, i.e. the constituents of signal $s$. A dictionary is called \textit{complete} when $M = N$. $\Phi$ can be either pre-defined or learned from data. We will select the atoms previously, for example, in a Fourier Dictionary we choose the atoms by knowing what frequencies we want.
 \newp Solve eq. \ref{signaldecom1} for a complete dictionary that is invertible means find $\hat{\beta}^{*}$ such that:
 
 \insertequation[\label{signaldecom2}]{\hat{\beta}^{*} = \Phi^{-1} \hat{s}}
@@ -200,7 +224,7 @@
 
 \newp Which requieres $(\Phi^{T}\Phi)$ to be invertible, means, having linear independent columns. Te matrix $(\Phi^{T}\Phi)^{-1}\Phi^{T}$ correspond to the left Moore-Penrose pseudo-inverse of $\Phi$.
 
-\newp Then complete dictionary is not often the better dictionary, here we are more interested in the overcomplete dictionary, this is a dictionary with more atoms than data samples ($M > N$). For overcomplete dictionaries (\ref{signaldecom1}) is under-determined and many solutions may exists. When $\Phi$ is overcomplete, the product $(\Phi^{T}\Phi)$ is always a singular matrix and then (\ref{pseudoinv1}) cannot be compute. In order to get an optimal its neccessary to include a regularization coeficient which impose conditions to help choose one of the many solutions of the underdetermined system. There are two kind of regularization usualy used, one is smooth-ness and the other is spartisy, the first refers to the least-rough or least-complex solution this condition usualy leads to dense solutions with almost all points non-zeros, and the second one refeers to solution with less non-zero points and thus a more sparse solution. here we will show many method that try to find a good $\beta$.
+\newp Then complete dictionary is not often the better dictionary, here we are more interested in the overcomplete dictionary, this is a dictionary with more atoms than data samples ($M > N$). For overcomplete dictionaries eq. (\ref{signaldecom1}) is under-determined and many solutions may exists. When $\Phi$ is overcomplete, the product $(\Phi^{T}\Phi)$ is always a singular matrix and then (\ref{pseudoinv1}) cannot be compute. In order to get an optimal its neccessary to include a regularization coeficient which impose conditions to help choose one of the many solutions of the underdetermined system. There are two kind of regularization usualy used, one is smooth-ness and the other is spartisy, the first refers to the least-rough or least-complex solution, this condition usualy leads to dense solutions with almost all points non-zeros, and the second one refeers to solution with less non-zero points and thus a more sparse solution. here we will show many method that try to find a good $\beta$.
 
 \subsubsection{Ridge Regression}
 \newp this is an example of a regression that use as regularization smooth-ness, the ridge regression is defined as:
@@ -211,11 +235,11 @@
 
 \insertequation[\label{ridge2}]{\beta^{*} = (\Phi^{T}\Phi + \alpha I)^{-1}\Phi^{T}s}
 
+\textbf{\texttt{UNCOMPLETE, NEED TO EXPLAIN MORE METHODS}}
 
+\subsection{Fourier Dictionary}
 
-
-
-\newp The discrete Fourier Transform descrived in section \ref{subsec_dft} can be interpreted as a change of basis of the signals which means change the time representation of the signal $\vec{s}$ to a frequency representation $vec{\beta}$ using a sine/cose basis. This will means that we can write:
+\newp The discrete Fourier Transform from section \ref{subsec_dft} can be interpreted as a change of basis of the signals which means change the time representation of the signal $\vec{s}$ to a frequency representation $vec{\beta}$ using a sine/cose basis. This will means that we can write:
 
 \insertequation[\label{signaldecomp1}]{\vec{s} = \Phi \cdotp \vec{\beta}}
 
@@ -225,31 +249,243 @@
 
  \newp and in order to represent Direct and Inverse Fourier Transform Correctly it's neccessary to use an orthogonal Basis which means an square matrix Dictionary with a defined Inverse, if this matrix is defined correctly (ofter in the evenly-sampled case) his adjoint will be his inverse in a way that allow us to define the Adjoint Transform and use it as the Inverse Transform.
  
- \insertequation[\label{signaldecom3}]{\vec{\beta} = \Phi^{T} \cdotp \vec{s}}
+\insertequation[\label{signaldecom3}]{\vec{\beta} = \Phi^{T} \cdotp \vec{s}}
  
-\newp Sadly for unevenly-sampled data we usually need to compute a frequency grid higher than the time grid producing a oversampling Dictionary, and even if we choose the same number of frequencies than times, there is no guarantee that the resulting Fourier Matrix will be unitary and invertible in a way that his adjoint transform be his Inverse Transform. Because of this, we need to look for a way to compute the Pseudo-inverse if the dictionary ($\Phi^{+}$) instead of the Inverse, usualy we can compute this by Single Value Decompostion, where the left decomposition (known as ):
+\newp Sadly for unevenly-sampled data we usually want to compute a frequency grid higher than the time grid producing a oversampling Dictionary, and even if we choose the same number of frequencies than times, there is no guarantee that the resulting Fourier Matrix will be unitary and invertible in a way that his adjoint transform be his Inverse Transform. Because of this, we need to look for a way to compute the Pseudo-inverse of the dictionary ($\Phi^{+}$) instead of the Inverse, usualy we can compute this by Single Value Decompostion, where the left decomposition (known as ):
 
 \insertequation[\label{pseudoinverse}]{\Phi^{+}}
 
-\section{Expresing Fourier Transform as Matrix}{\label{subsec_ftmatrix}}
+\textbf{\texttt{UNCOMPLETE}}  
 
-\newp The transform descrived in ec. \ref{to-discrete1} and \ref{to_discrete2} can be represented matricialy. Here the signal $s(t)$ will be a vector $\vec{s}$ and the Fourier Transform will be the product of this vector with the fourier matrix $\Phi^{N_f \times N_t}$ where $\Phi_{jk} = e^{2 \pi i t_j k \Delta f}$, here the .
+\section{Signal Detection}{\label{sec:signalDetect}}
+\newp Once we know how to interprete correctly some datas in frequency domain, using Non Unifor Fast Fourier Transform or Signal Decomposition, we are ready to work on the signal detection, i.e., on the search of a known signal in the observed data. This idea comes from the idealization of our data as an underlying signal plus additive \textbf{Wide-Sense Stationary} (WSS) Gaussian noise, then it is posible, through use of linear filters, to find what is this underlaying signal by comparing the observed data to known waveforms. Linears filters are defined as convolution of input data $x(t)$ with an impulse response filter wich is just the time reverse of the template waveform $h(t)$, for this we define the product $(x|h)$:
 
-\insertequation[\label{matrix-transform1}]{(\vec{s})_j = \sum_{j = 0}^{N_t} s_j e^{2 \pi i t_j k \delta f = F \cdotp \vec{s}}}   
+\insertequation[\label{signalDetect:linearFilter}]{(x|h)_{t_0} = [x(t) * h(-t)](t_0) = \int_{-\infty}^{\infty} \tilde{x}(f)\tilde{h}^{*}(f) e^{2\pi i f t_0} df}
+
+\newp Here we have used eq. (\ref{corr_as_conv}) to write this a correlation. It's also important to notice that in practice we should do a $causal$ time reverse for the impulse response $h(-t) \longrightarrow h(T-t)$ where $T$ is the total duration of the template waveform, but if we always use templates of same duration as the data window, then this factor is not important due to the periodicity in Fourier Transform leadin to $h(T-t)=h(-t)$.
+
+\newp And the optimal Filter is just find the filter that optimize a given quantity. The theory that we are going to use correspond to the \textbf{Matched Filter} (MF) which maximize the \textbf{Signal-to-Noise Ratio} (SNR) of the observed data, and in order to do this we need to consider an input signal to the filter composed of \textbf{only White Gaussian Noise} which is a WSS Gaussian noise but with constant spectral density.
+
+\newp Obviously the raw data detected by any deviced will have mostly colored Gaussian Noise, this means, a WSS Gaussian noise with non-constant spectral density, then it is necessary to do a previous filter which is called \textit{Whitening Filter} (WF) to clear the noise.
+
+\subsection{Whitening Filter}{\label{sec:signalDetect::ssec:WF}}
+
+\newp For an observed data $x(t)$ of additive WSS Gaussian colored noise $n(t)$, which could have or not an underlying signal $s(t)$, we define the whitening Filter with impulse response $h_w(-t)$ as the optimal filter when its output due to the input noise $n(t)$ is white, with variance $\sigma^{2}$. This can be write as:
+
+\insertequation[\label{whiteningFilter:whitenData}]{(x|h_w)_{t_0} = (s|h_w)_{t_0} + (n|h_w)_{t_0} \text{such that} var = \mathbb{E}[(n|h_w)^{2}] = \sigma^{2}}
+
+\newp Working a litle with this variance we will get:
+
+\insertequation[\label{whiteningFilter:noiseVarAsCovarFunct}]{
+\begin{aligned}[b]
+\mathbb{E}[|(n|h_w)|^{2}]	& = \mathbb{E}[(n|h_w)(n|h_w)^{*}] \\
+						& = \mathbb{E}\left[\int_{-\infty}^{\infty} n(t_0 + t_1)h_w^{*}(t_1) dt_1 \left(\int_{-\infty}^{\infty} n(t_0 + t_2) h_w^{*}(t_2) dt_2 \right)^{*}\right] \\
+						& = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} h_w^{*}(t_1) \mathbb{E}[n(t_0 + t_1) n(t_0 + t_2)^{*}] h_w(t_2) dt_1 dt_2 \\
+\end{aligned}}
+
+\newp In order to work with the covariance $\mathbb{E}[n(t_0 + t_1) n(t_0 + t_2)^{*}]$ we need to set some considerations, first the noise used will be a 0 mean random noise, in a way that $\mathbb{E}[n(t)] = 0$, second, the noise will be invariant in time (stationary) so $n(t + t_0) = n(t)$, with this que covariance will be reduced to:
+
+\insertequation[\label{whiteningFilter:noiseCovar}]{\mathbb{E}[n(t_0 + t_1) n(t_0 + t_2)^{*}] = \mathbb{E}[n(t_1)n^{*}(t_2)] = k_n(t_1, t_2) = k_n(\tau)}
+
+\newp Where we have used $\tau = t_1 - t_2$, $k_n(\tau)$ correspond to the auto-correlation function of the noise. \textbf{Bochner's theorem} states that the covariance function of a stationary process can be represented as the fourier transform of a positive finite measure\cite{gauss-procss}:
+
+\insertequation[\label{whiteningFilter:noiseCovTransf}]{k_n(\tau) = \int S_n(f)e^{2\pi i f \tau} df}
+
+\newp This transform is defined as the two-sided power spectral density being a real and positive function with no zero values. Using this on eq. (\ref{whiteningFilter:noiseVarAsCovarFunct}) we get:
+
+\insertequation[\label{whiteningFilter:noiseVar}]{
+\begin{aligned}[b]
+\mathbb{E}[|(n|h_w)|^{2}]	& = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} h_W^{*}(t_1) k_n(t_1 - t_2) h_w(t_2) dt_1 dt_2 \\
+						& =\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} h(t_2) \left( \int_{-\infty}^{\infty} S_n(f)e^{2\pi i f (t_1 - t_2)} df\right) h_w^{*}(t_1)  dt_1 dt_2 \\
+						& = \int_{-\infty}^{\infty} \left( \int_{-\infty}^{\infty} h_w^{*}(t_1)e^{2\pi i f t_1} dt_1 \right) S_n(f) \left( \int_{-\infty}^{\infty} h_w(t_2) e^{-2\pi i f t_2} dt_2 \right) df \\
+						& = \int_{-\infty}^{\infty}\tilde{h}_w^{*}(f) e^{-2\pi i f T} S_n(f) \tilde{h_w}(f) e^{2\pi i f T} df \\
+						& = \int_{-\infty}^{\infty}\tilde{h}_w^{*}(f) S_n(f) h_w(f) df \\
+						& = \int_{-\infty}^{\infty}S_n(f) |\tilde{h}_w(f)|^{2} df \\
+\end{aligned}}
+
+\newp With this, we define the Transfer function of the Whitening Filter impulse response as:
+
+\insertequation[\label{whiteningFilter:optimalWhiteningFilter}]{S_n(f)|\tilde{h}_w(f)|^{2} = S_w(f) \:\: \textbf{such that} \:\: \sigma^{2} = \int_{-\infty}^{\infty} S_w(f)}
+
+\newp this directly leads to:
+
+\insertequation[\label{whiteningFilter:optimalWhiteningImpulseResponse}]{|\tilde{h}_w(f)|^{2} = S_w(f)/S_n(f)}
+
+\newp In a window of a finite duration with a finite number of measures $N$ and a White Variance of $\sigma_w^{2}$, then $S_w(f) = \sigma_w^{2}/N = N_0$ and then:
+
+\insertequation[\label{whiteningFilter:optimalWhiteningImpulseResponseValue}]{|\tilde{h}_w(f)|^{2} = \frac{N_0}{S_n(f)}}
+
+\newp This definition of whitening will leads to a cleared signal of White noise with variance 1 and mean 0. After this, if we want to do another linear filter, we will need to normalize the impulse response by this whitening optimal filter too in order to get match the template waveform correctly.
+
+\subsection{Matched Filter}{\label{sec:signalDetect::ssec:MF}}
+\newp Matched filter correspond to find the optimal linear filter for maximizing the Signal To Noise Ratio (SNR) in the presence of additive white noise of a given variance $\sigma_w$ and 0 mean. For this we considers some data $x(t)$ with finite-energy which can be pure noise $x(t) = n(t)$ or a signal in addition to noise $x(t) = s(t) + n(t)$, this is taken as the input to a filter with impulse response $h_{\MF}(-t)$ and use the linear filter product defined in eq. (\ref{signalDetect:linearFilter})
+
+\newp If we do a MF using two different templates waveform, with different energy, it make hard to say what lineal filter works better because our impulse response functions are unormalized. This is clearly seen from the noise, on the input the noise is white but on the output the noise is convolved with the template and thus is not white anymore, this introduce a change on variance:
+
+\insertequation[\label{matchedFilter:variance}]{\sigma_{\MF} = \mathbb{E}[|(x|h_{\MF})|^{2}] = N_0 \IL |\tilde{h}_{\MF}(f)|^{2} df}
+
+\newp Where we have used the variance of eq. (\ref{whiteningFilter:noiseVar}) with the constant white noise PSD $S_w(f) = N_0$. Then we just need to divide the matched filter by square root of this variance in order to get a normed SNR of normal distribution $\mathcal{N}(\mu_{MF} / \sigma_{MF}, 1)$ where $\mu_{MF}$ is:
+
+\insertequation[\label{matchedFilter:mean}]{\mu_{\MF} = \mathbb{E}[(x|h_{\MF})] = \mathbb{E}[(n|h_{\MF})] + \mathbb{E}[(s|h_{\MF})] = 0 + (s|h_{\MF})_{t_0}}
+
+\newp Here we have that $\mathbb{E}[(s|h_{\MF})] = (s|h_{\MF})_{t_0}$ because the linear filter product itself is an expected value of the output filter. This expected value is for a given $t_0$ where we supose it is produced the maximum SNR response which is writen as:
+
+\insertequation[\label{matchedFilter:SNR}]{SNR_{t_0} = \frac{(x|h_{\MF})_{t_0}}{\sigma_{\MF}}}
+
+\newp And the optimal matched filter is when the expected underlying waveform that comes with noise on the input signals is just equal to the template waveform. from eq. (\ref{matchedFilter:mean}) we can use $x(t)$ instead of $s(t)$ to estimate $\mu_{\MF}$
+
+\subsubsection{scopes and limitations}{\label{sec:signalDetect::ssec:MF::sssec:scopes}}
+
+\newp Here we like to define limits on the behavior of the SNR, first we consider the situation when the input data is only white noise. Using the Cauchy-Schwarz inequality  on eq. (\ref{matchedFilter:SNR}) with $|\tilde{x}(f)|^{2} \thickapprox \lambda S_n(f)$, where $\lambda$ depends on the normalization and method used to estimate the PSD, we get:
+
+\insertequation[\label{matchedFilterScopes:limitOnlyNoise}]{|SNR_{t_0}| = \frac{|(x|h)_{t_0}|}{|\sigma_{\MF}|} = \frac{|(n|h)_{t_0}|}{|\sigma_{\MF}|} \leq \frac{\sqrt{\lambda \sigma_{w}} \sqrt{\int_{-\infty}^{\infty} |\tilde{h}_{\MF}(f)|^{2} df}}{\sqrt{N_0 \int_{-\infty}^{\infty} |\tilde{h}_{\MF}(f)|^{2} df}} \begin{array}{c} \text{Discrete} \\ = \\ case
+\end{array} \sqrt{\frac{\lambda N}{\sigma_w}}}
+
+\newp Here we have writen $N_0$ as the values on the discrete case $N_0 = \sigma_w^{2} / N$ of $N$ samples, we are going to continue using this but we will write the equations on continuous case. Eq. (\ref{matchedFilterScopes:limitOnlyNoise}) is a limit for every SNR produced when the input data is only white noise.
+
+\newp Another important limit is to find the maximum value that a SNR can achieve for any type of input data (with or without underlying signal), again, using the Cauchy-Schwarz inequality, we get in this case:
+
+\insertequation[\label{matchedFilterScopes:limitGeneral}]{|SNR_{t_0}| \leq \frac{\sqrt{\int_{-\infty}^{\infty} |\tilde{x}(f)|^{2} df} \sqrt{\int_{-\infty}^{\infty} |\tilde{h}_{\MF}(f)|^{2} df}}{\sqrt{N_0 \int_{-\infty}^{\infty} |\tilde{h}_{\MF}(f)|^{2} df}} \begin{array}{c} \text{Discrete} \\ = \\ case \end{array} \sqrt{\frac{E_x N}{\sigma_w^{2}}}}
+
+\newp Where $E_x = \IL |\tilde{h}_{\MF}(f)|^{2} df = \IL |h_{\MF}(t)|^{2} dt$ is the energy of the input data, here we see that the maximum value possible of the SNR only depend on the input data (energy, number of samples and white noise variance) and not on the template waveform.
+
+\subsection{Whitened Matched Filter}{\label{sec:signalDetect::ssec:WMF}}
+
+\newp We can (and must) use the Whitening Filter (WF) together with the Matched Filter (MF) for our (guessed) input signal with colored WSS noise. Here we just need to apply WF to both the input data and the inpulse response on the MF:
+\insertequation[\label{whitenedMatchedFilter:filterConvolution}]{(x|h_{\MF})^{\WM}_{t_0} = [\lbrace x * h_w\rbrace * \lbrace h_{\MF} * h_{w} \rbrace] = [x_w * h_{\WM}]}
+
+\newp Using the definition of lineal filter on eq. (\ref{signalDetect:linearFilter}) with eq. (\ref{convolution2}), this will be:
+
+\insertequation[\label{whitenedMatchedFilter:filterProduct}]{\wmf{x}{h} = \IL \tilde{x}(f) \tilde{h}_{\MF}^{*}(f)|\tilde{h}_w(f)|^{2} e^{2\pi i f t_0} df}
+
+\newp Where $|\tilde{h}_w(f)|^{2}$ is given by eq. (\ref{whiteningFilter:optimalWhiteningImpulseResponseValue}) this leads to:
+
+\insertequation[\label{whitenedMatchedFilter:filterProductValue}]{\wmf{x}{h} = N_0\IL \frac{\tilde{x}(f) \tilde{h}^{*}(f)}{S_n(f)} e^{2\pi i f t_0} df}
+
+\newp This also affect the variance and the expected (value) remains with same definition as shown in eq. (\ref{matchedFilter:mean}) but for the product defined in eq. (\ref{whitenedMatchedFilter:filterProductValue}):
+
+\insertequation[\label{whitenedMatchedFilter:VarianceFilter}]{\sigma_{\WM}^{2} = \mathbb{E}[|\wmf{n}{h}|^{2}] = N_0 \IL |\tilde{h}_{\MF}(f)|^{2}|\tilde{h}_{w}(f)|^{2} df = N_0^{2} \IL \frac{|\tilde{h}_{\MF}(f)|^{2}}{S_n(f)} df}
+
+\insertequation[\label{whitenedMatchedFilter:ExpectedValueFilter}]{\mu_{\WM} = \mathbb{E}[\wmf{x}{h}] = \mathbb{E}[\wmf{x-n}{h}]}
+
+\newp Here (and in the next sections) for simplicity we will write $\wmf{x}{h} = (x|h)$, $\sigma_{\WM}$ and $\mu_{\WM} = \mu$.Thus the SNR for the Whitened Matched Filter (writen as $\rho$ for simplicity) will be:
+
+\insertequation[\label{whitenedMatchedFilter:SNR-WMF}]{\rho_{t_0} = \frac{(x|h)}{\sigma}}
+
+\newp This division doesn't depend on $N_0$ so clearly this matched filter doesnt work with White noise, instead, consider any WSS Gaussian noise. For this definition, the limit values of the matched filter defined in eq. (\ref{matchedFilterScopes:limitOnlyNoise}) and (\ref{matchedFilterScopes:limitGeneral}) should be the same but due to numerical computations, could be not exactly the same. This SNR has the same distribution than before $\mathcal{N}(\mu / \sigma, 1)$.
+
+\section{Statistical Theory of Signal Detection}{\label{statTheoSigDet}}
+\newp The observed signal carried an additive noise introduced by the detector and is usually modeled as a Wide-Sense Stationary (WSS) Gaussian random process, this means, the problem of extracting the signal from the noise (as shown in section (\ref{sec:signalDetect}) can be interpreted as a statistical one. The presence of signal changes the statistical characteristics of the data observed $x(t)$, affecting his Probability Density Function (PDF). 
+\newp All the theory that will be described here are explained more extense in \citep{ligo-gauss-case, mit-course-sigSysAndInfer, ligo-1992}.
+\newp We are going to work with statistical hypothesis testing and then define a likelihood ratio with a threshold value in order to decide if there is really a signal or not.
+
+\subsection{Hypothesis test}
+
+\newp The main idea here is to consider two scenarios (binary hypothesis)  one is the \textit{null hypothesis} $H_0$ which consider data absent of signal and \textit{alternative hypothesis} $H_1$ which consider a signal present.
+
+\insertgather{\label{hypoTest:h0} H_0 : x(t) = n(t) \\
+\label{hypoTest:h1} H_1: x(t) = n(t) + s(t)}
+
+\newp The \textit{Binary Hypothesis test} or \textit{binary decision rule} consider 4 scenarios which can be representes as a confusion matrix. Two of these fourth posibilities are consider errors:
+\begin{itemize}
+\item $P(H_0|H_0)$, this is the probability of choose $H_0$ when $H_0$ is true. It's a \textbf{correct decision}.
+\item $P(H_1|H_0)$, probability of choose $H_1$ when $H_0$ is true. This is a Type I error and it's called \textbf{false alarm probability}.
+\item $P(H_0|H_1)$, probability of choose $H_0$ when $H_1$ is true. Type II error known as \textbf{False dismissal probability}.
+\item $P(H_1|H_1)$, probability of choose $H_1$ when $H_1$ is true. It's a \textbf{correct decision}.
+\end{itemize}
+\newp The type II error is also the \textit{probability of detection} of the signal. For the Test scenario, the type I error is called \textit{significance of the test} and type II error is \textit{power of the test}. 
+\newp Next, we need to find a test that is optimal. The main idea here, no mather what approach we use, is to calculate the \textbf{likelihood ratio}.
+\subsection{likelihood ratio}
+\newp From the binary hypothesis test, for a given measure $x$, we will have a probability $P(H_0|x)$ of $H_0$ being true and probability $P(H_1|x)$ of $H_1$ being true, oviously, if $H_1$ is actually true, then $P(H_1|x) > P(H_0|x)$, same for case of $H_0$ being true, this can be writen in the compact form:
+
+\insertequation[\label{likelihood:desicion}]{P(H_1|x) \begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} P(H_0|x)}
+
+\newp Here is implicit that when $P(H_0|x) = P(H_1|x)$ we cannot know what hypothesis is correct. These conditional probabilities are using the posterior probability of the hypotesis, this is different from the \textit{a priori} probabilities of every hypothesis $P(H_0)$ and $P(H_1)$. In order to evaluate the \textit{posteriori} probabilites in (\ref{likelihood:desicion}) we use the Bayes' rule:
+
+\insertequation[\label{likelihood:prioriDesicion}]{\frac{p_1f(x|H_1)}{f(x)} \begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} \frac{p_0f(x|H_0)}{f(x)}}
+
+\newp Where $f(x|H_j)$ is just the conditional PDF and $f(x)$ is the PDF of measure the observed data, since is the same for both hypothesis, we will not consider his values. On eq. (\ref{likelihood:prioriDesicion}) we have considered that $f(x|H_j) > 0$ for $j=0,1$. Next we can just rewrite this equation in order to get the likelihood ratio $\Lambda(x)$:
+
+\insertequation[\label{likelihood:ratio}]{\Lambda(x) = \frac{f(x|H_1)}{f(x|H_0)} \begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} \frac{p_0}{p_1} = \eta}
+
+\newp Where $\eta$ is a \textbf{threshold} that can be defined in several ways, one can estimate the optimal case usign bayesian inference or Neyman-Pearson (NP) detection between many others. For now we will use the NP theory to define the detection and threshold.
+
+\subsection{Neyman-Pearson Detection}
+\newp This approach consider a context in which we want to maximize the probability of detection defined as:
+
+\insertequation[\label{npDetection:probOfDetect}]{P_D = P(H_1|H_1) = \int_{D_1} f(x|H_1) dx}
+
+\newp While keeping the probability of false alarm:
+
+\insertequation[\label{npDetection:probOfFalseAlarm}]{P_{FA} = P(H_1|H_0) = \int_{D_1} f(x|H_0) dx = \alpha}
+
+\newp Below a pre-specified leve $\alpha$. The values in $D_1$ are all values for which the likelihood function is higher than a given threshold $\eta$. Then the threshold is picked to provide the largest possible $P_D$ while ensuring that $P_{FA}$ is not larger than the pre-specified level. The smaller the $\eta$, the largest the desicion region $D_1$ and the value of $P_D$, but $P_{FA}$ grows as well. We can just pick the smaller threshold that satisfied the given bound of $P_{FA}$.
+
+\subsection{NP Detection for Whitened Matched Filter}
+
+\newp Remembering that we consider the noise as a WSS White Gaussian random process, we can modelate this noise as a normal distribution of 0 mean ($\mu = 0$) and a given variance $\sigma$ ($\mathcal{N}(0, \sigma^{2})$), thus,  for both hypothesis from eq. (\ref{hypoTest:h0}) and (\ref{hypoTest:h1}) $n(t)$ distribute as:
+
+\insertequation[\label{npDetWMF:noiseDistr}]{n(t) \thicksim N(0, \sigma^{2}) \longrightarrow f(x) = \frac{1}{\sqrt{2 \pi \sigma^{2}}}e^{-\frac{x^{2}}{2\sigma^{2}}}}
+
+\newp When the matched filter as defined in sec. (\ref{sec:signalDetect::ssec:WMF}) is applied, our hypothesis tests are:
+
+\insertgather{\label{npDetWMF:H0} H_0: \:\: (x|h) = (n|h) \thicksim \mathcal{N}(0, 1) \\
+\label{npDetWMF:H1} H_1 \:\: (x|h) = (n|h) + (h|h) \thicksim \mathcal{N}(\frac{\mu_{\WM}}{\sigma_{\WM}}, 1)}
+
+\newp This is the optimal WMF-SNR at a time $t_0$. The Probability Density Function (PDF) of normal distributions is:
+
+\insertequation[\label{npDetWMF:PDF}]{f(\rho) = \frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(\rho - \mu)^{2}}{2\sigma^{2}}}}
+
+\newp Using this PDF as a conditional PDF with the hypothesis from eq. (\ref{npDetWMF:H0}) and (\ref{npDetWMF:H0}), where $\mu = (h|h)$ for $H_1$, the likelihood ratio (\ref{likelihood:ratio}) is writen as: 
+
+\insertequation[\label{npDetWMF:likelihoodRatio}]{
+\begin{aligned}[b]
+\Lambda\lbrace(x|h)\rbrace & = \frac{(\sqrt{2\pi} \sigma)^{-1} exp\left( -\frac{((x|h) - (h|h))^{2}}{2\sigma^{2}}\right)}{(\sqrt{2\pi} \sigma)^{-1} exp\left( -\frac{(x|h)^{2}}{2\sigma^{2}}\right)} \\
+			   & = exp\left(\frac{2(x|h)(h|h) - (h|h)^{2}}{2 \sigma^{2}} \right) \\
+			   & =  exp\left(\frac{(h|h)}{\mathbb{E}[(n|h)^{2}]} \lbrace (x|h) - \frac{1}{2}(h|h) \rbrace \right)
+\end{aligned}}
+
+\newp Te factor $(h|h) / \mathbb{E}[(n|h)^{2}]$ is simplified to $1/N_0$ if $t_0 = 0$. We dont know at which time the SNR is optimal so $t_0$ is not necessary 0. If we simplify this likelihood ratio by doing a natuural logarithm, we get:
+
+\insertequation[\label{npDetWMF:logLikelihoodRatio}]{ln[\Lambda\lbrace(x|h)\rbrace] = \frac{(h|h)}{\mathbb{E}[(n|h)^{2}]} \lbrace (x|h) - \frac{1}{2}(h|h) \rbrace \begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} ln\left[ \frac{p_0}{p_1} \right] = ln[\eta]}
+
+
+\newp And here que can write a critical criteria over Threshold  such that depend on the variance (\ref{whitenedMatchedFilter:VarianceFilter}) and optimal filter $(h|h)$ of the WMF-SNR, this threshold is compared with the value of the linear filter product $(x|h)$ to decide what hypothesis is correct: 
+
+
+\insertequation[\label{npDetWMF:criteriaOverThreshold}]{(x|h)\begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} \frac{\mathbb{E}[(n|h)^{2}]}{(h|h)} ln[\eta] + \frac{1}{2}(h|h) = \eta'}
+
+\newp Here we see that we can write the optimal threshold if we know what is the optimal filter and the a priori probability of $H_0$ and $H_1$, but this is not know for the mosts cases, so we need to estimate a threshold for a given constrains. Under the NP criteria, we choose this threshold $\eta'$ to maximize $P_D$ and satisfy the false alarm constant $\alpha$.
+
+\newp We know that the solution for eq. (\ref{npDetection:probOfFalseAlarm}) is a \textit{complex error function}:
+
+\insertequation[\label{npDetWMF:falseAlarmSolution}]{P_{FA} = \int_{\eta'}^{\infty} \frac{1}{\sqrt{2\pi}\sigma} e^{-x^{2}/(2\sigma^{2})} dx = \text{erfc}\left( \frac{\eta'}{\sigma}\right)}
+\newp Where $erfc()$ means the complex error function. Then we can solve for $\eta'$ which leads to:
+
+\insertequation[\label{npDetMF:thresholdFromFalseAlarm}]{\eta' = erfc^{-1}(\alpha) \sigma }
+
+\newp With this threshold defined, we calculate the probability of detection (\ref{npDetection:probOfDetect}) which solution is:
+
+\insertequation[\label{npDetWMF:probOfDetectSolution}]{P_{D} = \int_{\eta'}^{\infty} \frac{1}{\sqrt{2\pi}\sigma} e^{-(x - \mu)^{2}/(2\sigma^{2})} dx = \text{erfc}\left( \frac{\eta' - \mu}{\sigma}\right)}
+
+\newp In terms of the False Alarm:
+
+\insertequation[\label{npDetWMF:probOfDetectForGivenFalseAlarm}]{P_D = \text{erfc}\left(\frac{\sigma \text{erfc}^{-1}(O_{FA}) - \mu}{\sigma} \right) = \text{erfc}[\text{erfc}^{-1}(P_{FA}) - \mu / \sigma]}
+
+\newp This is the final value that we are going to use to determine if our SNR represent a detection or not, the parameters needed for this are the False alarm value $P_{FA}$ and the values calculated for the filter used to estimate the mean and variance. We can also define the counterpart, the probability of False alarm for a given Probability of detection:
+
+\insertequation[\label{npDetWMF:probOfFalseAlarForGivenProbOfDetect}]{P_{FA} = \text{erfc}[\text{erfc}^{-1}(P_D) + \mu / \sigma]}
+
+\newp What of these two probabilities we want to compute depend on what kind of event we observe.
 
 
 
-\section{Matched Filter}
-\newp Matched filter correspond to find the optimal linear filter for maximizing the Signal To Noise Ratio (SNR) in the presence of additive stochastic noise. For this we considere some data $s(t)$ with finite-energy which can be only Gaussian noise $s(t) = n(t)$ or a signal in addition to the noise $s(t) = n(t) + h(t)$, that are the input to a filter with impulse response $h(t)$, and produces the output signal given by the conovlution:
 
-\insertequation[\label{mf_base}]{y(\tau) = \int_{-\infty}^{\infty} s(\tau - t)h(t)dt}
-
-\newp Here the impulse response $h(t)$ correspond to the time reverse of the template
-
-\newp When we want to know if some data contain or not a well-known signal, the best method to use, if the data has stationary and Gaussian noise, is the Matched Filter. This method consis of, for a data which is noise plus some underlying signal $x(t) = s(t) + n(t)$, we whan to check, if this underlying singal $s(t)$ correspond to some well-known template $h(t)$. For this we estimate a Signal-to-Noise Ratio calculating the convolution of the data with the desired template divided by the self correlation of the noise knowed as Power Spectral Density. As we seen in section \ref{sec_ft}, the convolution of two signal can be expresedeasly in terms of fourier Transform. The most general definition of Matched Filter is:
-
-\insertequation[\label{int_mf}]{\chi(t_0) = 2\int_{-\infty}^{\infty} \frac{\tilde{s}(f)\tilde{h}^{*}(f)}{\mathcal{P}_n(f)} df}
-
-\newp Where $\tilde{s}(f)$ and $\tilde{h}(f)$ are the Fourier Transform and $\mathcal{P}_n(f)$ is the One-Sided Power Spectral Density of the noise.
-
-\insertequation[\label{onesidedpsd}]{\mathcal{P}_n()}
+\newpage
+\nocite{*}
+%\bibliography{references, revtex-custom}
+%\bibliographystyle{plain}
+%\printbibliography 
+\begin{multicols}{2}[\printbibheading]
+\printbibliography[heading=none]
+\end{multicols}

@@ -13,7 +13,7 @@
 % Licencia MIT:    [https://opensource.org/licenses/MIT/]
 
 % CREACIÓN DEL DOCUMENTO
-\documentclass[letterpaper,11pt]{article} % Articulo tamaño carta, 11pt
+\documentclass[letterpaper,10pt]{article} % Articulo tamaño carta, 11pt
 \usepackage[utf8]{inputenc} % Codificación UTF-8
 
 % INFORMACIÓN DEL DOCUMENTO
@@ -52,25 +52,23 @@
 % CONFIGURACIONES
 \input{lib/config}
 % ESTILO PORTADA Y HEADER-FOOTER
-\def\hfstyle {style9}              % Estilo header-footer (10 estilos disp.)
-\def\portraitstyle {style9}        % Estilo portada (16 estilos disp.)
 
 % IMPORTACIÓN DE LIBRERÍAS
 \input{lib/env/imports}
-%\renewcommand{\thesection}{\Roman{section}}  % redefinicion de los numeros en section
+% add the references
+\addbibresource{references.bib}
 
 % IMPORTACIÓN DE FUNCIONES Y ENTORNOS
+
 \input{lib/cmd/all}
 
 % IMPORTACIÓN DE ESTILOS
 \input{lib/style/all}
-
 % CONFIGURACIÓN INICIAL DEL DOCUMENTO
 \input{lib/cfg/init}
 % INICIO DE LAS PÁGINAS
 %\titleformat{\section}[hang]{\bfseries}{\thesection}{0pt}{}
 \begin{document}
-
 % PORTADA
 \input{lib/page/portrait}
 
@@ -91,6 +89,8 @@
 % ======================= INICIO DEL DOCUMENTO =======================
 
 \input{report_content} % contenido del reporte
+%Random citation \autocite[1]{a} embeddeed in text.
+%% REFERENCES
 
 % FIN DEL DOCUMENTO
 \end{document}
