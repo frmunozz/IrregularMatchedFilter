@@ -368,11 +368,11 @@
 
 \insertequation[\label{whitenedMatchedFilter:ExpectedValueFilter}]{\mu_{\WM} = \mathbb{E}[\wmf{x}{h}] = \mathbb{E}[\wmf{x-n}{h}]}
 
-\newp Here (and in the next sections) for simplicity we will write $\wmf{x}{h} = (x|h)$, $\sigma_{\WM}$ and $\mu_{\WM} = \mu$.Thus the SNR for the Whitened Matched Filter (writen as $\rho$ for simplicity) will be:
+\newp Here (and in the next sections) for simplicity we will write $\wmf{x}{h} = (x|h)$, $\sigma_{\WM} = \sigma$ and $\mu_{\WM} = \mu$.Thus the SNR for the Whitened Matched Filter (writen as $\rho$ for simplicity) will be:
 
 \insertequation[\label{whitenedMatchedFilter:SNR-WMF}]{\rho_{t_0} = \frac{(x|h)}{\sigma}}
 
-\newp This division doesn't depend on $N_0$ so clearly this matched filter doesnt work with White noise, instead, consider any WSS Gaussian noise. For this definition, the limit values of the matched filter defined in eq. (\ref{matchedFilterScopes:limitOnlyNoise}) and (\ref{matchedFilterScopes:limitGeneral}) should be the same but due to numerical computations, could be not exactly the same. This SNR has the same distribution than before $\mathcal{N}(\mu / \sigma, 1)$.
+\newp This division doesn't depend on $N_0$ so clearly this matched filter doesnt work with White noise (and in next we will ignore this factor), instead, consider any WSS Gaussian noise. For this definition, the limit values of the matched filter defined in eq. (\ref{matchedFilterScopes:limitOnlyNoise}) and (\ref{matchedFilterScopes:limitGeneral}) should be the same but due to numerical computations, could be not exactly the same. This SNR has the same distribution than before $\mathcal{N}(\mu / \sigma, 1)$.
 
 \section{Statistical Theory of Signal Detection}{\label{statTheoSigDet}}
 \newp The observed signal carried an additive noise introduced by the detector and is usually modeled as a Wide-Sense Stationary (WSS) Gaussian random process, this means, the problem of extracting the signal from the noise (as shown in section (\ref{sec:signalDetect}) can be interpreted as a statistical one. The presence of signal changes the statistical characteristics of the data observed $x(t)$, affecting his Probability Density Function (PDF). 
@@ -429,40 +429,53 @@
 
 \newp When the matched filter as defined in sec. (\ref{sec:signalDetect::ssec:WMF}) is applied, our hypothesis tests are:
 
-\insertgather{\label{npDetWMF:H0} H_0: \:\: (x|h) = (n|h) \thicksim \mathcal{N}(0, 1) \\
-\label{npDetWMF:H1} H_1 \:\: (x|h) = (n|h) + (h|h) \thicksim \mathcal{N}(\frac{\mu_{\WM}}{\sigma_{\WM}}, 1)}
+\insertgather{\label{npDetWMF:H0} H_0: \:\: (x|h) = (n|h) \thicksim \mathcal{N}(0, \sigma) \\
+\label{npDetWMF:H1} H_1 \:\: (x|h) = (n|h) + (s|h) \thicksim \mathcal{N}(\mu, \sigma)}
 
-\newp This is the optimal WMF-SNR at a time $t_0$. The Probability Density Function (PDF) of normal distributions is:
+\newp then, for the SNR we normalize by square root of the variance, leading to hypothesis tests:
+
+\insertgather{\label{npDetWMF:H0SNR} H_0: \:\: \frac{(x|h)}{\sigma} = \frac{(n|h)}{\sigma} \thicksim \mathcal{N}(0, 1) \\
+\label{npDetWMF:H1SNR} H_1 \:\: \frac{(x|h)}{\sigma} = \frac{(n|h)}{\sigma} + \frac{(s|h)}{\sigma} \thicksim \mathcal{N}(\frac{\mu}{\sigma}, 1)}
+
+\newp Here the product $(s|h)$ is optimal when the signal $s(t)$ is equal to the impulse response shifted by the optimal time of match $s(t) = h(t_0 - t)$, using the base definition of linear filter (\ref{signalDetect:linearFilter}) writen as a simple convolution (\ref{convolution1}), with the parseval's equation (\ref{parseval}) and the equations defined in sec. (\ref{sec:signalDetect::ssec:WMF}):
+
+\insertequation[\label{npDetWMF:optimalMean}]{(s|h) = [h(t_0 - t) * h(-t)](t_0) = \IL h(t_0 - (t_0 - t))h(-t) dt = \IL |\tilde{h}(f)|^{2} df = (h|h)_{t_0=0} = \sigma^{2}}
+
+\newp The expected value of the optimal filter is just the variance of the output filter. And the Probability Density Function (PDF) of normal distributions is:
 
 \insertequation[\label{npDetWMF:PDF}]{f(\rho) = \frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(\rho - \mu)^{2}}{2\sigma^{2}}}}
 
-\newp Using this PDF as a conditional PDF with the hypothesis from eq. (\ref{npDetWMF:H0}) and (\ref{npDetWMF:H0}), where $\mu = (h|h)$ for $H_1$, the likelihood ratio (\ref{likelihood:ratio}) is writen as: 
+\newp Using this PDF as a conditional PDF with the hypothesis from eq. (\ref{npDetWMF:H0}) and (\ref{npDetWMF:H0}), where $\mu = (s|h)$ for $H_1$, the likelihood ratio (\ref{likelihood:ratio}) is writen as: 
 
 \insertequation[\label{npDetWMF:likelihoodRatio}]{
 \begin{aligned}[b]
-\Lambda\lbrace(x|h)\rbrace & = \frac{(\sqrt{2\pi} \sigma)^{-1} exp\left( -\frac{((x|h) - (h|h))^{2}}{2\sigma^{2}}\right)}{(\sqrt{2\pi} \sigma)^{-1} exp\left( -\frac{(x|h)^{2}}{2\sigma^{2}}\right)} \\
-			   & = exp\left(\frac{2(x|h)(h|h) - (h|h)^{2}}{2 \sigma^{2}} \right) \\
-			   & =  exp\left(\frac{(h|h)}{\mathbb{E}[(n|h)^{2}]} \lbrace (x|h) - \frac{1}{2}(h|h) \rbrace \right)
+\Lambda\lbrace(x|h)\rbrace & = \frac{(\sqrt{2\pi})^{-1} exp\left( -\frac{((x|h) - (s|h))^{2}}{2\sigma^{2}}\right)}{(\sqrt{2\pi})^{-1} exp\left( -\frac{(x|h)^{2}}{2\sigma^{2}}\right)} \\
+			   & = exp\left(\frac{2(x|h)(s|h) - (s|h)^{2}}{2 \sigma^{2}} \right) \\
+			   & =  exp\left(\frac{(s|h)}{\mathbb{E}[(n|h)^{2}]} \lbrace (x|h) - \frac{1}{2}(s|h) \rbrace \right)
 \end{aligned}}
 
-\newp Te factor $(h|h) / \mathbb{E}[(n|h)^{2}]$ is simplified to $1/N_0$ if $t_0 = 0$. We dont know at which time the SNR is optimal so $t_0$ is not necessary 0. If we simplify this likelihood ratio by doing a natuural logarithm, we get:
+\newp Te factor $(s|h) / \mathbb{E}[(n|h)^{2}]$ on the optimal case is simplified resulting in:
 
-\insertequation[\label{npDetWMF:logLikelihoodRatio}]{ln[\Lambda\lbrace(x|h)\rbrace] = \frac{(h|h)}{\mathbb{E}[(n|h)^{2}]} \lbrace (x|h) - \frac{1}{2}(h|h) \rbrace \begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} ln\left[ \frac{p_0}{p_1} \right] = ln[\eta]}
+\insertequation[\label{npDetWMF:likelihoodRatioSimplified}]{\Lambda\lbrace(x|h)\rbrace = exp\left( \lbrace (x|h) - \frac{1}{2}(h|h) \rbrace \right)}
+
+\newp This likelihood ratio is the same that the one used in \cite{ligo-gauss-case, ligo-1992} even if we derived the formulas from different perspectives. If we simplify this likelihood ratio by doing a natural logarithm, we get:
+
+\insertequation[\label{npDetWMF:logLikelihoodRatio}]{ln[\Lambda\lbrace(x|h)\rbrace] =  \lbrace (x|h) - \frac{1}{2}(h|h) \rbrace \begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} ln\left[ \frac{p_0}{p_1} \right] = ln[\eta]}
 
 
-\newp And here que can write a critical criteria over Threshold  such that depend on the variance (\ref{whitenedMatchedFilter:VarianceFilter}) and optimal filter $(h|h)$ of the WMF-SNR, this threshold is compared with the value of the linear filter product $(x|h)$ to decide what hypothesis is correct: 
+\newp And here que can write a critical criteria over Threshold to decide what hypothesis is correct: 
 
 
-\insertequation[\label{npDetWMF:criteriaOverThreshold}]{(x|h)\begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} \frac{\mathbb{E}[(n|h)^{2}]}{(h|h)} ln[\eta] + \frac{1}{2}(h|h) = \eta'}
+\insertequation[\label{npDetWMF:criteriaOverThreshold}]{(x|h)\begin{array}{c}H_1 \\ > \\ < \\ H_0 \end{array} ln[\eta] + \frac{1}{2}(h|h) = \eta'}
 
-\newp Here we see that we can write the optimal threshold if we know what is the optimal filter and the a priori probability of $H_0$ and $H_1$, but this is not know for the mosts cases, so we need to estimate a threshold for a given constrains. Under the NP criteria, we choose this threshold $\eta'$ to maximize $P_D$ and satisfy the false alarm constant $\alpha$.
+\newp Here we see that we can write the optimal threshold if we know what is the optimal and the \textit{a priori} probability of $H_0$ and $H_1$ (or at least is ratio), but this is not know for the mosts cases, so we need to estimate a threshold for a given constrains. Under the NP criteria, we choose this threshold $\eta'$ to maximize $P_D$ and satisfy the desired false alarm $P_{FA}$.
 
-\newp We know that the solution for eq. (\ref{npDetection:probOfFalseAlarm}) is a \textit{complex error function}:
+\newp We know that the solution for eq. (\ref{npDetection:probOfFalseAlarm}) is a \textit{complementary error function}:
 
 \insertequation[\label{npDetWMF:falseAlarmSolution}]{P_{FA} = \int_{\eta'}^{\infty} \frac{1}{\sqrt{2\pi}\sigma} e^{-x^{2}/(2\sigma^{2})} dx = \text{erfc}\left( \frac{\eta'}{\sigma}\right)}
-\newp Where $erfc()$ means the complex error function. Then we can solve for $\eta'$ which leads to:
+\newp Where $erfc()$ means the complementary error function. Then we can solve for $\eta'$ which leads to:
 
-\insertequation[\label{npDetMF:thresholdFromFalseAlarm}]{\eta' = erfc^{-1}(\alpha) \sigma }
+\insertequation[\label{npDetMF:thresholdFromFalseAlarm}]{\eta' = erfc^{-1}(P_{FA}) \sigma }
 
 \newp With this threshold defined, we calculate the probability of detection (\ref{npDetection:probOfDetect}) which solution is:
 
@@ -470,11 +483,11 @@
 
 \newp In terms of the False Alarm:
 
-\insertequation[\label{npDetWMF:probOfDetectForGivenFalseAlarm}]{P_D = \text{erfc}\left(\frac{\sigma \text{erfc}^{-1}(O_{FA}) - \mu}{\sigma} \right) = \text{erfc}[\text{erfc}^{-1}(P_{FA}) - \mu / \sigma]}
+\insertequation[\label{npDetWMF:probOfDetectForGivenFalseAlarm}]{P_D = \text{erfc}\left(\frac{\sigma \text{erfc}^{-1}(O_{FA}) - \mu}{\sigma} \right) = \text{erfc}[\text{erfc}^{-1}(P_{FA}) - \mu / \sigma] = \text{erfc}\left[\text{erfc}^{-1}(P_{FA}) - \frac{(x|h)_{t_0}}{\sqrt{(h|h)_{t_0=0}}} \right]}
 
 \newp This is the final value that we are going to use to determine if our SNR represent a detection or not, the parameters needed for this are the False alarm value $P_{FA}$ and the values calculated for the filter used to estimate the mean and variance. We can also define the counterpart, the probability of False alarm for a given Probability of detection:
 
-\insertequation[\label{npDetWMF:probOfFalseAlarForGivenProbOfDetect}]{P_{FA} = \text{erfc}[\text{erfc}^{-1}(P_D) + \mu / \sigma]}
+\insertequation[\label{npDetWMF:probOfFalseAlarForGivenProbOfDetect}]{P_{FA} = \text{erfc}\left[\text{erfc}^{-1}(P_D) + \frac{(x|h)_{t_0}}{\sqrt{(h|h)_{t_0=0}}}\right]}
 
 \newp What of these two probabilities we want to compute depend on what kind of event we observe.
 
