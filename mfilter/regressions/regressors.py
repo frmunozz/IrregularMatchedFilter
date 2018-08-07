@@ -1,5 +1,6 @@
 from sklearn import linear_model
-from mfilter.types.arrays import Array
+from mfilter.types import Array
+from mfilter.regressions.dictionaries import Dictionary
 import numpy as np
 
 
@@ -11,63 +12,22 @@ def _cast_into_ft(coefs):
     return ft
 
 
-def _split_fourier_dict(F):
-    return np.hstack((F.real, F.imag))
-
-
-class Dictionary(object):
-    def __init__(self, times, frequencies):
-        if not isinstance(times, Array):
-            times = Array(np.array(times))
-
-        if not isinstance(frequencies, Array):
-            frequencies = Array(np.array(frequencies),
-                                delta=frequencies[1] - frequencies[0])
-        self._t = times
-        self._f = frequencies
-        self._dict = self.compute_dict()
-
-    def compute_dict(self, times=None, frequency=None):
-        if isinstance(times, Array):
-            self._t = times
-
-        if isinstance(frequency, Array):
-            self._t = frequency
-
-        matrix = self._t.data.reshape(-1, 1) * self._f.data
-        return np.exp(2j * np.pi * matrix)
-
-    @property
-    def frequency(self):
-        return self._f.data
-
-    @property
-    def time(self):
-        return self._t.data
-
-    @property
-    def matrix(self):
-        return self._dict
-
-    @property
-    def splited_matrix(self):
-        return _split_fourier_dict(self._dict)
-
-    @property
-    def df(self):
-        return self._f.delta
+def split_ft(ft):
+    coefs = np.zeros(len(ft)*2)
+    for i in range(len(ft)):
+        coefs[i] = ft[i].real
+        coefs[i + len(ft)] = ft[i].imag
+    return coefs
 
 
 class BasicRegression(object):
     def __init__(self, overfit=True, phi: Dictionary = None):
         self._ovfit = overfit
         self._reg = self._get_instance()
-
         self._dict = Dictionary([-1, -1], [-1, -1])
         self._valid = False
-
-        if phi is not None:
-            self.set_dict(phi)
+        self._validate_phi(phi)
+        self.coef_ = None
 
     def _validate_phi(self, phi_dict):
         if phi_dict is None:
@@ -88,7 +48,10 @@ class BasicRegression(object):
 
     @property
     def coef(self):
-        return self._reg.coef_
+        if self.coef_ is None:
+            return np.zeros(len(self._dict.frequency))
+        else:
+            return self.coef_
 
     @property
     def dict(self):
@@ -110,22 +73,32 @@ class BasicRegression(object):
         phi = Dictionary(times, frequency)
         self._validate_phi(phi)
 
-    def fit(self, y, phi: Dictionary = None):
+    def fit(self, y: np.ndarray, phi: Dictionary = None):
         self._validate_phi(phi)
         if not self._valid:
             raise ValueError("regressor doesn't have a valid dictionary")
 
-        self._reg.fit(self._dict.splited_matrix, y)
+        n = self._dict.shape(splited=True)[1]
+        if self.coef_ is None or len(self.coef_) != n:
+            self.coef_ = np.zeros(self._dict.shape(splited=True)[1])
+
+        self._reg.fit(self._dict.splited_matrix, y, coef_init=self.coef_)
+        # self._reg.fit(self._dict.splited_matrix, to_fit)
+
+        self.coef_ = self._reg.coef_
 
     def get_ft(self, y: Array, phi: Dictionary = None):
-        self.fit(y.data, phi=phi)
+        self.fit(y.value, phi=phi)
         return _cast_into_ft(self.coef)
 
     def predict(self, phi: Dictionary =None):
-        return self._reg.predict(phi)
+        return self._reg.predict(phi.splited_matrix)
 
-    def reconstruct(self, beta: Array):
-        return np.dot(self._dict.matrix, beta.data)
+    def reconstruct(self, frequency_data: Array):
+        return np.dot(self._dict.matrix, frequency_data.value)
+
+    def score(self, y: Array):
+        return self._reg.score(self._dict.splited_matrix, y.value)
 
 
 class RidgeRegression(BasicRegression):
@@ -156,7 +129,7 @@ class LassoRegression(BasicRegression):
 
 class ElasticNetRegression(BasicRegression):
     def __init__(self, alpha=1, l1_ratio=0.5, overfit=True,
-                 phi: Dictionary = None):
+                 phi: Dictionary = None, flags= None):
         self._a = alpha
         self._l1 = l1_ratio
         super().__init__(overfit=overfit, phi=phi)
@@ -166,4 +139,24 @@ class ElasticNetRegression(BasicRegression):
             return linear_model.ElasticNet(alpha=self._a, l1_ratio=self._l1)
         else:
             return linear_model.ElasticNetCV(l1_ratio=self._l1, alphas=self._a)
+
+
+class SGDRegression(BasicRegression):
+    def __init__(self, alpha=0.0001, max_iter=500, tol=0.01,
+                 overfit=True, phi: Dictionary = None):
+        self._a = alpha
+        self._max_iter = max_iter
+        self._tol = tol
+        super().__init__(overfit, phi)
+
+    def _get_instance(self, cv=3):
+        if self._ovfit:
+            return linear_model.SGDRegressor(alpha=self._a,
+                                             max_iter=self._max_iter,
+                                             tol=self._tol,
+                                             shuffle=True,
+                                             penalty="elasticnet",l1_ratio=0.5)
+        else:
+            raise ValueError("method dosent have a cross validation implementation")
+
 

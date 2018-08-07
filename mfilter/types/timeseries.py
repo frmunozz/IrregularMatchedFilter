@@ -1,36 +1,51 @@
 import numpy as np
-from mfilter.implementations.regressions import *
 from mfilter.types.arrays import Array
-from mfilter.types.frequencyseries import FrequencySamples
+from mfilter.types.frequencyseries import FrequencySamples, FrequencySeries
 import matplotlib.pyplot as plt
+from pynfft import NFFT, Solver
 
 
 class TimesSamples(Array):
-    def __init__(self, n, delta=None, regular=False, struct="slight",
-                 clear=True, **kwargs):
-        if delta is None:
-            raise ValueError("need to receive a valid delta of times")
+    def __init__(self, initial_array=None, n=None, delta=None, regular=False,
+                 struct="slight", clear=True, **kwargs):
+        if initial_array is None:
+            if delta <= 0:
+                raise ValueError("need to receive a valid delta of times")
 
-        if regular:
-            offset = kwargs.get("offset", 0)
-            arr = offset + np.arange(n) * delta
+            if regular:
+                offset = kwargs.get("offset", 0)
+                initial_array = offset + np.arange(n) * delta
+            else:
+                arr = IrregularTimeSamples(n, delta, **kwargs)
+                initial_array = arr.compute(struct=struct, clear=clear, **kwargs)
+
         else:
-            arr = IrregularTimeSamples(n, delta, **kwargs)
+            if delta is None:
+                try:
+                    delta = initial_array.dt
+                except AttributeError:
+                    delta = -1
 
-        super().__init__(arr.compute(struct=struct, clear=clear, **kwargs),
-                         delta=delta)
+            if isinstance(initial_array, TimesSamples):
+                initial_array = initial_array.value
 
-    @property
-    def times(self):
-        return self.data
+        super().__init__(initial_array)
+        self._delta = delta
 
     @property
     def dt(self):
-        return self.delta
+        return self._delta
 
     @property
-    def fs(self):
-        return len(self) / self.duration
+    def average_fs(self):
+        return len(self._data) / self.duration
+
+    @property
+    def duration(self):
+        return self._data.max() - self._data.min()
+
+    def shifted(self, shift_by):
+        return self - shift_by
 
 
 class IrregularTimeSamples(object):
@@ -38,12 +53,15 @@ class IrregularTimeSamples(object):
         if dt <= 0:
             raise ValueError("'dt' need to be positive and non zero")
 
+        if grid is None:
+            grid = np.arange(n) * dt
+
         if n != len(grid):
             raise ValueError("the 'grid' used need to be of length 'n'")
 
         self.n = n
         self.dt = dt
-        self.t = grid if grid is not None else np.arange(n) * dt
+        self.t = grid
 
     def compute(self, struct="slight", clear=True, **kwargs):
         kwargs = self._set_kwargs(kwargs)
@@ -101,22 +119,42 @@ class IrregularTimeSamples(object):
         self._base(**kwargs)
 
     def _auto_mix(self):
-        gamma = np.random.choice([0.5, 1, 2, 3])
+        gamma = np.random.choice([0.5, 1, 1.5, 2])
         offset = np.random.uniform(0, self.n * self.dt)
         empty_window = np.random.uniform(0, self.n * self.dt * 0.5)
-
+        self.t.sort()
         self.t[2 * (self.n // 5):4 * (self.n // 5)] *= gamma
         self.t[3 * (self.n // 5):] += empty_window
-        self._add_irregularities()
+        self._add_irregularities(epsilon=np.random.normal(0,
+                                                          0.05 * self.dt,
+                                                          self.n))
+        self.t.sort()
         self._normalize(offset=offset)
 
 
 class TimeSeries(Array):
-    def __init__(self, initial_values, times=None, dt=None, regular=False,
-                 **kwargs):
-        super().__init__(initial_values)
-        self._regular = regular
-        self._times = self._validate_times(times, dt, len(self), **kwargs)
+    def __init__(self, initial_array, times=None, delta_t=None, regular=False,
+                 dtype=None, **kwargs):
+
+        if len(initial_array) < 1:
+            raise ValueError('initial_array must contain at least one sample.')
+
+        if times is None:
+            if delta_t is None:
+                try:
+                    delta_t = initial_array.delta_t
+                except AttributeError:
+                    raise TypeError('must provide either an initial_array with'
+                                    ' a delta_t attribute, or a value for '
+                                    'delta_t')
+            times = TimesSamples(n=len(initial_array), delta=delta_t,
+                                 regular=regular, **kwargs)
+
+        if not isinstance(times, TimesSamples):
+            raise ValueError("time must be a TimesSamples object")
+
+        super().__init__(initial_array, dtype=dtype)
+        self._times = times
 
     def __eq__(self, other):
         """
@@ -127,54 +165,173 @@ class TimeSeries(Array):
         return self.times == other.times
 
     @property
-    def times(self) -> Array:
+    def times(self):
         return self._times
 
-    def _validate_times(self, times, dt, n, **kwargs):
-        _boolean_aux = dt is not None and n is not None
-        if times is None and _boolean_aux:
-            # compute the times
-            times = TimesSamples(n, delta=dt,
-                                 regular=kwargs.get("regular", False),
-                                 struct=kwargs.get("struct", "slight"),
-                                 clear=kwargs.get("clear", True), **kwargs)
+    @property
+    def duration(self):
+        return self._times.duration
 
-        elif isinstance(times, (list, np.ndarray)):
-            dt = dt if self._regular else -1
-            times = Array(times, delta=dt)
+    @property
+    def sample_rate(self):
+        return self._times.average_fs
 
-        return times
+    @property
+    def start_time(self):
+        return self._times.min()
 
-    def time_slice(self, start, end):
-        start_idx = np.argmin(np.abs(self._times.offset - start))
-        end_idx = np.argmin(np.abs(self._times.end - end))
-        return self.slice_by_indexes(start_idx, end_idx), \
-            self._times.slice_by_values(start, end)
+    @property
+    def end_time(self):
+        return self._times.max()
 
-    def auto_regression(self, regressor,
-                        min_freq=None, max_freq=None,
-                        samples_per_peak=5, nyquist_factor=2,
-                        n_freqs=None):
+    @property
+    def epoch(self):
+        return self._times.min()
 
-        frequencies = FrequencySamples(self._times, n=n_freqs,
-                                       minimum_frequency=min_freq,
-                                       maximum_frequency=max_freq,
-                                       samples_per_peak=samples_per_peak,
-                                       nyquist_factor=nyquist_factor)
+    @property
+    def average_fs(self):
+        return self._times.average_fs
 
-        return frequencies, self.regression(regressor, frequencies)
+    def _getslice(self, index):
+        return self._return(self._data[index],
+                            times=TimesSamples(initial_array=self._times[index]))
 
-    def regression(self, regressor, frequencies: Array):
-        new_dict = Dictionary(self._times.data, frequencies.data)
-        return regressor.fit(self._data, phi=new_dict)
+    def get_time_slice(self, start_time, end_time):
+        start_idx = np.abs(self._times - start_time).argmin()
+        end_idx = np.abs(self._times - end_time).argmin()
+        return self._getslice(slice(start_idx, end_idx))
 
-    def nfft(self):
-        pass
+    def _return(self, ary, **kwargs):
+        times = kwargs.get("times", self._times)
+        return TimeSeries(ary, times=times)
 
-    def psd_noise(self):
-        pass
+    def regression(self, series, regressor=None,
+                   frequencies: FrequencySamples=None):
+        from mfilter.regressions import Dictionary
+        if regressor is None:
+            raise ValueError("need a Regressor object")
 
-    def plot(self):
-        plt.figure()
-        plt.plot(self.times.data, self.data.real)
-        plt.show()
+        if frequencies is None:
+            frequencies = regressor.frequency
+        new_dict = Dictionary(self.times, frequencies)
+        return FrequencySeries(regressor.get_ft(series, phi=new_dict),
+                               frequency_grid=frequencies, epoch=self.epoch)
+
+    def direct_transform(self, dict):
+        return np.dot(dict.matrix, self._data)
+
+    def ts_nfft(self, series, Nf=None, tol=0.6, flags=None):
+        if Nf is None:
+            Nf = len(self)
+
+        plan = NFFT(Nf, len(self))
+        plan.x = self._times.value
+        plan.precompute()
+        solv = Solver(plan, flags=flags)
+        solv.y = series.value
+        solv.before_loop()
+        count = 0
+        while True:
+            solv.loop_one_step()
+            if max(solv.r_iter) < tol:
+                break
+            if count == 500:
+                print("maximum number of iteration reached")
+                break
+            count += 1
+
+        freqs = np.fft.fftfreq(Nf)*Nf / self._times.duration
+        freqs = FrequencySamples(initial_array=freqs)
+        return FrequencySeries(solv.f_hat_iter,
+                               frequency_grid=freqs, epoch=self.epoch)
+
+    def psd(self, frequency_grid: FrequencySamples):
+        """
+        calculate the power spectral density of this time series.
+
+        For now, it uses the Lomb-Scargle periodogram but in future should
+        use the Lomb-Welch for averaging.
+
+        :param frequency_grid: FrequencySamples object
+        :return: FrequencySeries
+        """
+        return frequency_grid.lomb_scargle(self.times, self.value)
+
+    def get_dictionary(self, reg=None, frequency_grid=None, dict=None):
+        from mfilter.regressions import Dictionary
+        if dict is None:
+            if reg is None:
+                if frequency_grid is None:
+                    raise ValueError("must provide either a FrequencySamples,"
+                                     "Regressor object or Dictionary object")
+                else:
+                    dict = Dictionary(self._times, frequency_grid)
+            else:
+                if not reg._valid:
+                    raise ValueError("Regressor object has no valid dictionary")
+                dict = reg.dict
+
+        return dict
+
+    def to_frequencyseries(self, frequency_grid=None, method="regression",
+                           window=None, **kwargs):
+        if self.kind == 'complex':
+            raise TypeError("transform only work with real timeSeries data")
+
+        if isinstance(window, np.ndarray):
+            series = self._return(self._data * window)
+        else:
+            series = self._return(self._data)
+
+        if method is "regression":
+            # dict = self.get_dictionary(reg=kwargs.get("reg", None),
+            #                            frequency_grid=frequency_grid,
+            #                            dict=kwargs.get("dictionary", None))
+
+            tmp = self.regression(series, regressor=kwargs.get("reg", None),
+                                  frequencies=frequency_grid)
+            # betas = self.direct_transform(dict)
+            # return FrequencySeries(betas, frequency_grid=dict.frequency,
+            #                        epoch=self.epoch)
+
+        elif method is "nfft":
+            tmp = self.ts_nfft(series, Nf=kwargs.get("Nf", None),
+                               flags=kwargs.get("flags", None))
+
+        else:
+            raise ValueError("for now we have only implemented regressor "
+                             "method")
+
+        return tmp
+
+    def match(self, other, psd=None, frequency_grid=None, method="regression",
+              tol=0.1, **kwargs):
+
+        return self.to_frequencyseries(frequency_grid=frequency_grid,
+                                       method=method,
+                                       **kwargs).match(other, psd=psd, tol=tol)
+
+    def plot(self, axis=None, label="data", _show=False):
+        if axis is None:
+            fig = plt.figure()
+            axis = fig.add_subplot(111)
+
+        axis.plot(self.times, self.value, label=label)
+        axis.set_title("TimeSeries values")
+        axis.set_xlabel("times (sec)")
+        plt.legend()
+        if _show:
+            plt.show()
+
+    def add_data(self, point_data, point_time):
+        self._data = np.append(self._data, point_data)
+        self._times.add_point(point_time)
+
+
+    # TODO: not used
+    # def time_slice(self, start, end):
+    #     start_idx = np.argmin(np.abs(self._times.offset - start))
+    #     end_idx = np.argmin(np.abs(self._times.end - end))
+    #     return self.slice_by_indexes(start_idx, end_idx), \
+    #         self._times.slice_by_values(start, end)
+

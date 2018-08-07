@@ -9,6 +9,8 @@ from nfft import nfft_adjoint, nfft
 from mfilter.implementations.regressions import *
 from .types.timeseries import TimeSeries
 from .types.frequencyseries import FrequencySeries
+from .hypothesistest.probabilities import HypothesisTesting
+
 import matplotlib.pyplot as plt
 import pdb
 
@@ -52,114 +54,195 @@ def cast_into_ft(coefs):
 
 
 class BasicMatchedFilter(object):
-    def __init__(self, data: TimeSeries, template: Array):
-        if not isinstance(data, TimeSeries):
-            raise ValueError("need to use a TimeSeries object as 'data'")
-        if not isinstance(template, (TimeSeries, FrequencySeries)):
-            raise ValueError("need to use a TimeSeries or FrequencySeries" +
-                             " as 'template")
+    def __init__(self, data: TimeSeries=None, template: Array=None,
+                 psd=None, times=None, **kwargs):
+        """
+        Calculation of the SNR using the Matched filter method,
+        here we use an input data with a template waveform used as impulse
+        response of the filter and estimate the SNR for different time-shifts
+        looking fo the best match.
 
-        self.data = data
-        self.template = template
-        self.same_size()
+        This class can be initialized with the data and template to fit and
+        stores the signals in frequency domain.
 
-    def same_size(self):
-        if isinstance(self.template, TimeSeries):
-            gap = len(self.data) - len(self.template)
-            if gap > 0:
-                self.template.resize(len(self.data))
-                self.template.times.replace(self.data.times)
-            elif gap < 0:
-                self.data.resize(len(self.template))
-                self.data.times.resize(self.template.times)
+        Or later you can change/set the data or template to do match filter
 
-            assert self.data == self.template
+        :param data: observed data to use in the linear filter
+        :param template: template waveform to use as filter
+        """
+        self._prev_computations(data=data, template=template, **kwargs)
 
-    def _ft(self, **kwargs):
-        # dummy
-        return 0, 0
+        if isinstance(data, (list, np.ndarray)):
+            if times is None:
+                raise ValueError("must define either a data as TimeSeries or "
+                                 "times by separate")
+            data = TimeSeries(Array(data), times=times)
 
-    def _compute_corr(self, data_ft, temp_ft, psd):
-        pass
+        times = data.times if data is not None else None
+        data = self._ft(data, **kwargs)
+        template = self._ft(template, **kwargs)
+        assert data == template or (data is None or template is None)
 
-    def _h_norm(self, temp_ft, psd):
-        pass
+        if isinstance(psd, (list, np.ndarray)):
+            psd = FrequencySeries(Array(psd), frequency=data.frequency,
+                                  df=data.df)
+            assert psd.almost_equals(data)
 
-    def _psd(self, **kwargs):
-        pass
+        self._ft_d = data
+        self._ft_t = template
+        self._psd = psd
+        self._t = times
 
-    def snr(self, **kwargs):
-        # pdb.set_trace()
-        psd = kwargs.get('psd', None)
+    def set_data(self, data, **kwargs):
+        self._t = data.times
+        self._ft_d = self._ft(data, **kwargs)
+        assert self._ft_d == self._ft_t or self._ft_d is None
+
+    def set_template(self, template, **kwargs):
+        self._ft_t = self._ft(template, **kwargs)
+        assert self._ft_t.equivalent_freq_series(self._ft_d) or self._ft_d is None
+
+    def set_psd(self, psd):
         if psd is None:
-            psd = self._psd(**kwargs)
-        data_ft, temp_ft = self._ft(**kwargs)
+            return
+        if isinstance(psd, (list, np.ndarray)):
+            df = psd[1] - psd[0]
+            psd = FrequencySeries(Array(psd), frequency=self._ft_t.frequency,
+                                  df=df)
+        assert self._ft_d == psd or self._ft_d is None
+        self._psd = psd
 
-        corr = self._compute_corr(data_ft, temp_ft, psd)
-        #corr.plot()
-        h_norm = self._h_norm(temp_ft, psd)
-        print("h_norm is ", h_norm.real)
-        norm = 4 * data_ft.df
-        print("norm is ", norm)
-        z = corr.reconstruct(self._reg, times=self.data.times)
+    def set_all(self, data, template, psd, **kwargs):
+        self._prev_computations(data=data, template=template, **kwargs)
+        self.set_data(data, **kwargs)
+        self.set_template(template, **kwargs)
+        self.set_psd(psd)
 
-        #z.plot()
+    def snr(self, return_norm=True):
+        if self._ft_d is None or self._ft_t is None or self._psd is None:
+            raise ValueError("first need to set values of data, template and"
+                             "psd")
+        z = self.linear_filter()
+        h_norm = self.variance()
+        snr = z.real / np.sqrt(h_norm.real)
 
-        snr = norm * z.real / np.sqrt(h_norm.real * norm)
+        if return_norm:
+            return [TimeSeries(snr, times=self._t), h_norm]
+        else:
+            return TimeSeries(snr, times=self._t)
 
-        return TimeSeries(snr, times=self.data.times)
+    def linear_filter(self):
+        pass
+
+    def variance(self):
+        pass
+
+    def _ft(self, target, **kwargs):
+        pass
+
+    def _get_psd(self, **kwargs):
+        pass
+
+    def _prev_computations(self, data=None, template=None, **kwargs):
+        """
+        any previous computation needed before do the matched filter
+        :param kwargs:
+        """
+        pass
 
 
 class MatchedFilterRegression(BasicMatchedFilter):
-    def __init__(self, data: TimeSeries, template: Array, reg: BasicRegression):
-        super().__init__(data, template)
+    def __init__(self, data: TimeSeries, template: Array,
+                 reg: BasicRegression, psd=None, times=None, **kwargs):
         self._reg = reg
+        super().__init__(data, template, psd=psd, times=times, **kwargs)
 
-    def _set_dictionary(self, **kwargs):
+    def _set_dictionary(self, data, template=None, **kwargs):
         freqs = kwargs.get("frequency", None)
 
         if isinstance(freqs, (list, np.ndarray)):
             freqs = Array(np.array(freqs), delta=freqs[1] - freqs[0])
 
         if freqs is None:
-            if isinstance(self.template, FrequencySeries):
+            if isinstance(template, FrequencySeries):
                 logger.warning("using auto calculation of dictionary")
-                freqs = self.template.frequency
+                freqs = template.frequency
             else:
                 raise ValueError("need to have q valid frequency")
 
-        self._reg.set_dict(self.data.times, freqs)
+        self._reg.set_dict(data.times, freqs)
 
-    def _data_ft(self):
-        return FrequencySeries(self._reg.get_ft(self.data),
+    def _ft(self, target, **kwargs):
+        if isinstance(target, FrequencySeries) or target is None:
+            return target
+
+        return FrequencySeries(self._reg.get_ft(target),
                                frequency=self._reg.frequency, df=self._reg.df)
 
-    def _temp_ft(self):
-        if isinstance(self.template, FrequencySeries):
-            return self.template
-        else:
-            return FrequencySeries(self._reg.get_ft(self.template),
-                                   frequency=self._reg.frequency,
-                                   df=self._reg.df)
+    def variance(self):
+        corr = np.multiply(self._ft_t.data, self._ft_t.data.conjugate())
+        return (corr / self._psd.data).sum()
 
-    def _ft(self, **kwargs):
-        self._set_dictionary(**kwargs)
-        return self._data_ft(), self._temp_ft()
+    def linear_filter(self):
+        corr = np.multiply(self._ft_d.data, self._ft_t.data.conjugate())
+        corr = FrequencySeries(corr / self._psd.data,
+                               frequency=self._ft_d.frequency,
+                               df=self._ft_d.df)
+        return corr.reconstruct(self._reg, times=self._t)
 
-    def _compute_corr(self, data_ft, temp_ft, psd):
-        simple_corr = np.multiply(data_ft.data, temp_ft.data.conjugate())
-        return FrequencySeries(simple_corr / psd, frequency=data_ft.frequency,
-                               df=data_ft.df)
+    def _prev_computations(self, data=None, template=None, **kwargs):
+        if data is None:
+            return
+        if kwargs.get("set_dict", False):
+            self._set_dictionary(data=data, template=template, **kwargs)
 
-    def _h_norm(self, temp_ft, psd):
-        # pdb.set_trace()
-        simple_corr = np.multiply(temp_ft.data, temp_ft.data.conjugate())
-        return (simple_corr / psd).sum()
+    def _get_psd(self, **kwargs):
+        raise NotImplementedError("estimation of noise PSD not implemented "
+                                  "yet")
 
-    def _psd(self, **kwargs):
-        raise ValueError("estimation of noise PSD not implemented yet")
-        pass
+"""Return a frequency series of the input vector.
+    If the input is a frequency series it is returned, else if the input
+    vector is a real time series it is fourier transformed and returned as a
+    frequency series.
+    Parameters
+    ----------
+    vector : TimeSeries or FrequencySeries
+    Returns
+    -------
+    Frequency Series: FrequencySeries
+        A frequency domain version of the input vector.
+    """
 
+def make_frequency_series(vec):
+    """
+    Return a frequency series of the input vector.
+    If the input is a frequency series it is returned, else if the input
+    vector is a real time series it is fourier transformed and returned as a
+    frequency series.
+    Parameters.
+    Function extracted from PyCBC code.
+
+    :param vec: TimeSeries or FrequencySeries
+    :return: FrequencySeries
+    """
+    if isinstance(vec, FrequencySeries):
+        return vec
+    if isinstance(vec, TimeSeries):
+        N = len(vec)
+        n = N/2+1
+        delta_f = 1.0 / N / vec.dt
+        vectilde = FrequencySeries(zeros(n, dtype=complex_same_precision_as(vec)),
+                                    delta_f=delta_f, copy=False)
+        fft(vec, vectilde)
+        return vectilde
+    else:
+        raise TypeError("Can only convert a TimeSeries to a FrequencySeries")
+
+
+def match(input_data, template_filter, psd=None, input_norm=None,
+          filter_norm=None, low_frequency_cutoff=None,
+          high_frequency_cutoff=None, n_samples_per_peak=None):
+    pass
 
 # TODO: not implemented yet
 # class SegmentMatchedFilter:
