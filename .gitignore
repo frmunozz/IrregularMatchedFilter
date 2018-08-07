@@ -16,3 +16,6 @@ __pycache__/
 *.bcf
 *.blg
 *.run.xml
+*.mjd
+*.dat
+*.png
