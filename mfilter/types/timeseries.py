@@ -2,17 +2,17 @@ import numpy as np
 from mfilter.types.arrays import Array
 from mfilter.types.frequencyseries import FrequencySamples, FrequencySeries
 import matplotlib.pyplot as plt
-from pynfft import NFFT, Solver
+# from pynfft import NFFT, Solver
 
 
 class TimesSamples(Array):
-    def __init__(self, initial_array=None, n=None, delta=None, regular=False,
+    def __init__(self, initial_array=None, n=None, delta=None,
                  struct="slight", clear=True, **kwargs):
         if initial_array is None:
             if delta <= 0:
                 raise ValueError("need to receive a valid delta of times")
 
-            if regular:
+            if "regular" in struct:
                 offset = kwargs.get("offset", 0)
                 initial_array = offset + np.arange(n) * delta
             else:
@@ -220,30 +220,30 @@ class TimeSeries(Array):
     def direct_transform(self, dict):
         return np.dot(dict.matrix, self._data)
 
-    def ts_nfft(self, series, Nf=None, tol=0.6, flags=None):
-        if Nf is None:
-            Nf = len(self)
-
-        plan = NFFT(Nf, len(self))
-        plan.x = self._times.value
-        plan.precompute()
-        solv = Solver(plan, flags=flags)
-        solv.y = series.value
-        solv.before_loop()
-        count = 0
-        while True:
-            solv.loop_one_step()
-            if max(solv.r_iter) < tol:
-                break
-            if count == 500:
-                print("maximum number of iteration reached")
-                break
-            count += 1
-
-        freqs = np.fft.fftfreq(Nf)*Nf / self._times.duration
-        freqs = FrequencySamples(initial_array=freqs)
-        return FrequencySeries(solv.f_hat_iter,
-                               frequency_grid=freqs, epoch=self.epoch)
+    # def ts_nfft(self, series, Nf=None, tol=0.6, flags=None):
+    #     if Nf is None:
+    #         Nf = len(self)
+    #
+    #     plan = NFFT(Nf, len(self))
+    #     plan.x = self._times.value
+    #     plan.precompute()
+    #     solv = Solver(plan, flags=flags)
+    #     solv.y = series.value
+    #     solv.before_loop()
+    #     count = 0
+    #     while True:
+    #         solv.loop_one_step()
+    #         if max(solv.r_iter) < tol:
+    #             break
+    #         if count == 500:
+    #             print("maximum number of iteration reached")
+    #             break
+    #         count += 1
+    #
+    #     freqs = np.fft.fftfreq(Nf)*Nf / self._times.duration
+    #     freqs = FrequencySamples(initial_array=freqs)
+    #     return FrequencySeries(solv.f_hat_iter,
+    #                            frequency_grid=freqs, epoch=self.epoch)
 
     def psd(self, frequency_grid: FrequencySamples):
         """
@@ -295,8 +295,9 @@ class TimeSeries(Array):
             #                        epoch=self.epoch)
 
         elif method is "nfft":
-            tmp = self.ts_nfft(series, Nf=kwargs.get("Nf", None),
-                               flags=kwargs.get("flags", None))
+            pass
+            # tmp = self.ts_nfft(series, Nf=kwargs.get("Nf", None),
+            #                    flags=kwargs.get("flags", None))
 
         else:
             raise ValueError("for now we have only implemented regressor "

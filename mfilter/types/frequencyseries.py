@@ -6,7 +6,7 @@ import numpy as np
 from mfilter.types.arrays import Array
 from astropy.stats import LombScargle
 import matplotlib.pyplot as plt
-from pynfft import NFFT, Solver
+# from pynfft import NFFT, Solver
 import scipy.signal as signal
 
 
@@ -340,14 +340,14 @@ class FrequencySeries(Array):
             reg.set_dict(times, self._freqs)
         return reg.get_ft(self)
 
-    def fs_nfft(self, series, times=None):
-        if times is None:
-            raise ValueError("to do nfft method need a valid TimesSamples")
-        plan = NFFT(len(self), len(times))
-        plan.x = times.value
-        plan.precompute()
-        plan.f_hat = series.value
-        return plan.trafo(), times
+    # def fs_nfft(self, series, times=None):
+    #     if times is None:
+    #         raise ValueError("to do nfft method need a valid TimesSamples")
+    #     plan = NFFT(len(self), len(times))
+    #     plan.x = times.value
+    #     plan.precompute()
+    #     plan.f_hat = series.value
+    #     return plan.trafo(), times
 
     def to_timeseries(self, method="regression", window=None, **kwargs):
         from mfilter.types.timeseries import TimeSeries, TimesSamples
@@ -363,7 +363,8 @@ class FrequencySeries(Array):
             # tmp = self.inverse_transform(reg, times=times)
 
         elif method is "nfft":
-            tmp, times = self.fs_nfft(series, times=kwargs.get("times", None))
+            pass
+            # tmp, times = self.fs_nfft(series, times=kwargs.get("times", None))
 
         else:
             raise ValueError("for now we have only implemented regressor "
