@@ -1,4 +1,5 @@
 from sklearn import linear_model
+from sklearn.preprocessing import scale
 from mfilter.types import Array
 from mfilter.regressions.dictionaries import Dictionary
 import numpy as np
@@ -28,6 +29,7 @@ class BasicRegression(object):
         self._valid = False
         self._validate_phi(phi)
         self.coef_ = None
+        self.valid = False
 
     def _validate_phi(self, phi_dict):
         if phi_dict is None:
@@ -69,29 +71,39 @@ class BasicRegression(object):
     def time(self):
         return self._dict.time
 
-    def set_dict(self, times, frequency):
+    def create_dict(self, times, frequency):
         phi = Dictionary(times, frequency)
         self._validate_phi(phi)
+        self.valid = True
 
-    def fit(self, y: np.ndarray, phi: Dictionary = None):
+    def set_dict(self, phi: Dictionary):
         self._validate_phi(phi)
+
+    def scale(self):
+        if not self._valid:
+            raise ValueError("regressor doesn't have a valid dictionary")
+        scale(self._dict.splited_matrix)
+
+    def fit(self, y: np.ndarray):
         if not self._valid:
             raise ValueError("regressor doesn't have a valid dictionary")
 
         n = self._dict.shape(splited=True)[1]
         if self.coef_ is None or len(self.coef_) != n:
-            self.coef_ = np.zeros(self._dict.shape(splited=True)[1])
+            self.reset()
 
         self._reg.fit(self._dict.splited_matrix, y, coef_init=self.coef_)
         # self._reg.fit(self._dict.splited_matrix, to_fit)
 
         self.coef_ = self._reg.coef_
 
-    def get_ft(self, y: Array, phi: Dictionary = None):
-        self.fit(y.value, phi=phi)
+    def get_ft(self, y: Array):
+        self.fit(y.value)
         return _cast_into_ft(self.coef)
 
     def predict(self, phi: Dictionary =None):
+        if phi is None:
+            phi = self.dict
         return self._reg.predict(phi.splited_matrix)
 
     def reconstruct(self, frequency_data: Array):
@@ -99,6 +111,9 @@ class BasicRegression(object):
 
     def score(self, y: Array):
         return self._reg.score(self._dict.splited_matrix, y.value)
+
+    def reset(self):
+        self.coef_ = np.zeros(self.dict.shape(splited=True)[1])
 
 
 class RidgeRegression(BasicRegression):
@@ -143,10 +158,12 @@ class ElasticNetRegression(BasicRegression):
 
 class SGDRegression(BasicRegression):
     def __init__(self, alpha=0.0001, max_iter=500, tol=0.01,
-                 overfit=True, phi: Dictionary = None):
+                 penalty="l2", l1_ratio=0.5, overfit=True, phi: Dictionary = None):
         self._a = alpha
         self._max_iter = max_iter
         self._tol = tol
+        self.penalty = penalty
+        self.l1_ratio = l1_ratio
         super().__init__(overfit, phi)
 
     def _get_instance(self, cv=3):
@@ -155,7 +172,12 @@ class SGDRegression(BasicRegression):
                                              max_iter=self._max_iter,
                                              tol=self._tol,
                                              shuffle=True,
-                                             penalty="elasticnet",l1_ratio=0.5)
+                                             penalty=self.penalty,
+                                             l1_ratio=self.l1_ratio,
+                                             average=False,
+                                             learning_rate='invscaling',
+                                             eta0=0.01,
+                                             power_t=0.25)
         else:
             raise ValueError("method dosent have a cross validation implementation")
 
