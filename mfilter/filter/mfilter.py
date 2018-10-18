@@ -1,12 +1,53 @@
 
 from mfilter.types import TimeSeries, FrequencySeries, FrequencySamples, TimesSamples
-import numpy as np
 from mfilter.filter.matchedfilter import *
 from mfilter.regressions.dictionaries import Dictionary
 from mfilter.regressions.regressors import BasicRegression, SGDRegression
+import abc
 
 
-class MFilter(object):
+def sigmasq(htilde: FrequencySeries, psd=None):
+    norm = 2*htilde.delta_f
+
+    if psd is None:
+        sq = htilde.inner()
+    else:
+        assert psd.delta_f == htilde.delta_f
+        assert (psd.frequencies == htilde.frequencies).all()
+        sq = htilde.weighted_inner(weight=psd)
+
+    return sq.real * norm
+
+
+def to_snr(time: TimesSamples, corr: FrequencySeries, reg: BasicRegression):
+    reg.reset()
+    reg.create_dict(time, corr.frequency_object)
+    return corr.to_timeseries(method="regression", reg=reg)
+
+
+def sigma(htilde: FrequencySeries, psd: FrequencySeries=None):
+    return np.sqrt(sigmasq(htilde, psd=psd))
+
+
+def correlation(stilde: FrequencySeries, htilde: FrequencySeries, psd: FrequencySeries=None):
+    if psd is None:
+        psd = 1
+    return FrequencySeries(stilde * htilde.conj() / psd,
+                           frequency_grid=htilde.frequency_object,
+                           epoch=htilde.epoch)
+
+
+def mfilter(time: TimesSamples, stilde: FrequencySeries,
+            htilde: FrequencySeries, reg: BasicRegression, psd=None):
+
+    norm = 2 / sigma(htilde, psd=None)
+    corr = correlation(stilde, htilde, psd=psd)
+    q = to_snr(time, corr, reg=reg)
+    q *= norm
+    return q
+
+
+class SecuentialMFilter(object):
     def __init__(self, event_duration, upgrade_rate=1):
         self.event_duration = event_duration
         self.upgrade_rate = upgrade_rate
@@ -202,28 +243,28 @@ class MFilter(object):
 
         return snrs
 
-    def match_all(self, templates_generator, overfit=0.5, **kwargs):
-        """
-
-        :param templates_generator:     array of templates generators
-        :param kwargs:                  params for the template generator
-        """
-        time_start = self.data.times.min()
-        self.last_segment = False
-        while not self.last_segment:
-            window_range = self._get_idx(time_start)
-            window_time = TimesSamples(self.data.times[start_idx:end_idx])
-            window = TimeSeries(self.data[start_idx:end_idx],
-                                times=window_time)
-            templates = templates_generator(window_time, **kwargs)
-            seg_n = len(window_time)//10
-            self._reg.set_dict(window_time, self.freq)
-            psd = self.freq.lomb_welch(window_time, window, seg_n, overfit)
-            stilde = window.to_frequencyseries(reg=self._reg)
-            for temp in templates:
-                snr = matched_filter(temp, stilde, psd=psd,
-                                     frequency_grid=self.freq,
-                                     unitary_energy=True, reg=self._reg)
+    # def match_all(self, templates_generator, overfit=0.5, **kwargs):
+    #     """
+    #
+    #     :param templates_generator:     array of templates generators
+    #     :param kwargs:                  params for the template generator
+    #     """
+    #     time_start = self.data.times.min()
+    #     self.last_segment = False
+    #     while not self.last_segment:
+    #         window_range = self._get_idx(time_start)
+    #         window_time = TimesSamples(self.data.times[start_idx:end_idx])
+    #         window = TimeSeries(self.data[start_idx:end_idx],
+    #                             times=window_time)
+    #         templates = templates_generator(window_time, **kwargs)
+    #         seg_n = len(window_time)//10
+    #         self._reg.set_dict(window_time, self.freq)
+    #         psd = self.freq.lomb_welch(window_time, window, seg_n, overfit)
+    #         stilde = window.to_frequencyseries(reg=self._reg)
+    #         for temp in templates:
+    #             snr = matched_filter(temp, stilde, psd=psd,
+    #                                  frequency_grid=self.freq,
+    #                                  unitary_energy=True, reg=self._reg)
 
 
 
