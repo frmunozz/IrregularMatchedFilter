@@ -205,17 +205,18 @@ class TimeSeries(Array):
         times = kwargs.get("times", self._times)
         return TimeSeries(ary, times=times)
 
-    def regression(self, series, regressor=None,
-                   frequencies: FrequencySamples=None):
-        from mfilter.regressions import Dictionary
-        if regressor is None:
-            raise ValueError("need a Regressor object")
-
-        if frequencies is None:
-            frequencies = regressor.frequency
-        new_dict = Dictionary(self.times, frequencies)
-        return FrequencySeries(regressor.get_ft(series, phi=new_dict),
-                               frequency_grid=frequencies, epoch=self.epoch)
+    def regression(self, series, regressor=None, scale=False):
+        from mfilter.regressions.regressors import BasicRegression
+        if isinstance(regressor, BasicRegression):
+            if regressor.valid:
+                if scale:
+                    regressor.scale()
+                return FrequencySeries(regressor.get_ft(series),
+                                       frequency_grid=regressor.frequency, epoch=self.epoch)
+            else:
+                raise ValueError("regressor must have a valid dictionary")
+        else:
+            raise ValueError("need a BasicRegression object")
 
     def direct_transform(self, dict):
         return np.dot(dict.matrix, self._data)
@@ -245,7 +246,7 @@ class TimeSeries(Array):
     #     return FrequencySeries(solv.f_hat_iter,
     #                            frequency_grid=freqs, epoch=self.epoch)
 
-    def psd(self, frequency_grid: FrequencySamples):
+    def psd(self, frequency_grid: FrequencySamples, norm='standard'):
         """
         calculate the power spectral density of this time series.
 
@@ -255,7 +256,7 @@ class TimeSeries(Array):
         :param frequency_grid: FrequencySamples object
         :return: FrequencySeries
         """
-        return frequency_grid.lomb_scargle(self.times, self.value)
+        return frequency_grid.lomb_scargle(self.times, self.value, norm=norm)
 
     def get_dictionary(self, reg=None, frequency_grid=None, dict=None):
         from mfilter.regressions import Dictionary
@@ -273,8 +274,8 @@ class TimeSeries(Array):
 
         return dict
 
-    def to_frequencyseries(self, frequency_grid=None, method="regression",
-                           window=None, **kwargs):
+    def to_frequencyseries(self, method="regression",
+                           window=None, scale=False, **kwargs):
         if self.kind == 'complex':
             raise TypeError("transform only work with real timeSeries data")
 
@@ -284,18 +285,10 @@ class TimeSeries(Array):
             series = self._return(self._data)
 
         if method is "regression":
-            # dict = self.get_dictionary(reg=kwargs.get("reg", None),
-            #                            frequency_grid=frequency_grid,
-            #                            dict=kwargs.get("dictionary", None))
-
-            tmp = self.regression(series, regressor=kwargs.get("reg", None),
-                                  frequencies=frequency_grid)
-            # betas = self.direct_transform(dict)
-            # return FrequencySeries(betas, frequency_grid=dict.frequency,
-            #                        epoch=self.epoch)
+            tmp = self.regression(series, regressor=kwargs.get("reg", None), scale=scale)
 
         elif method is "nfft":
-            pass
+            raise ValueError("nfft deprecated")
             # tmp = self.ts_nfft(series, Nf=kwargs.get("Nf", None),
             #                    flags=kwargs.get("flags", None))
 
