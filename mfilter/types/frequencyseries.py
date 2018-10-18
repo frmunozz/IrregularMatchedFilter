@@ -126,7 +126,7 @@ class FrequencySamples(Array):
     def basic_df(self):
         return self._df * self._n_per_peak
 
-    def lomb_scargle(self, times, data, package="astropy", norm="psd"):
+    def lomb_scargle(self, times, data, package="astropy", norm="standard", weighted=False, windowed=False):
         """
         compute the Lomb-Scargle periodogram using astropy package.
 
@@ -140,10 +140,13 @@ class FrequencySamples(Array):
         else:
             raise ValueError("for now we only use astropy package to compute"
                              "lomb-scargle periodogram")
-
-        window = signal.windows.tukey(len(data), alpha=1. / 8)
+        window = 1
+        W = 1
+        if windowed:
+            window = signal.windows.tukey(len(data), alpha=1. / 8)
         data *= window
-        W = (window ** 2).sum() / len(window)
+        if windowed and weighted:
+            W = (window ** 2).sum() / len(window)
 
         if self.has_zero:
             zero_idx = self.zero_idx
@@ -161,9 +164,12 @@ class FrequencySamples(Array):
         else:
             psd = lomb.power(np.abs(self._data))
 
+        # psd[psd < 0] = 0.000001
+
         return FrequencySeries(psd / W, frequency_grid=self, epoch=times.min())
 
-    def lomb_welch(self, times, data, data_per_segment, over):
+    def lomb_welch(self, times, data, data_per_segment, over,
+                   norm='standard', weighted=True, windowed=True):
         """
         compute the Lomb-Scargle average periodogram usign welch computation,
         this method is not developed yet, idea comes from paper:
@@ -172,6 +178,11 @@ class FrequencySamples(Array):
         Non-uniform Sampling", IEEE-EMBS, 26th annual International conference,
         Sep 2004.
 
+        :param over:
+        :param data_per_segment:
+        :param norm:
+        :param weighted:
+        :param windowed:
         :param times:
         :param data:
         """
@@ -182,24 +193,28 @@ class FrequencySamples(Array):
 
         counter = 0
         n = 0
+        W = 1
+        window = 1
         while n < len(data) - data_per_segment:
             aux_timeseries = data.get_time_slice(times[n],
                                                  times[n + data_per_segment])
-            window = signal.windows.tukey(len(aux_timeseries), alpha=1. / 8)
+            if windowed:
+                window = signal.windows.tukey(len(aux_timeseries), alpha=1. / 8)
             aux_timeseries *= window
-            W = (window ** 2).sum() / len(window)
-            # W = 1
-            psd += (aux_timeseries.psd(self) / W)
+            if weighted and windowed:
+                W = (window ** 2).sum() / len(window)
+            psd += (aux_timeseries.psd(self, norm=norm) / W)
             n += int(data_per_segment * over)
             counter += 1
 
         aux_timeseries = data.get_time_slice(
             times[len(times) - data_per_segment - 1], times[len(times) - 1])
-        window = signal.windows.tukey(len(aux_timeseries), alpha=1. / 8)
+        if windowed:
+            window = signal.windows.tukey(len(aux_timeseries), alpha=1. / 8)
         aux_timeseries *= window
-        W = (window ** 2).sum() / len(window)
-        # W = 1
-        psd += (aux_timeseries.psd(self) / W)
+        if weighted and windowed:
+            W = (window ** 2).sum() / len(window)
+        psd += (aux_timeseries.psd(self, norm=norm) / W)
         counter += 1
         psd /= counter
         return psd
@@ -332,7 +347,7 @@ class FrequencySeries(Array):
             times = reg.time
 
         if reg.dict.frequency != self._freqs:
-            reg.set_dict(times, self._freqs)
+            raise ValueError("regressor use dictionary with different frequencies")
         return reg.reconstruct(series), times
 
     def inverse_transform(self, reg, times=None):
