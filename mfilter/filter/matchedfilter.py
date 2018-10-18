@@ -22,7 +22,7 @@ def sigmasq(htilde, psd=None, frequency_grid=None, method="regression",
             **kwargs):
     htilde = make_frequency_series(htilde, frequency_grid=frequency_grid,
                                    method=method, **kwargs)
-    norm = 1
+    norm = 2*htilde.delta_f
 
     if psd is None:
         sq = htilde.inner()
@@ -74,7 +74,7 @@ def linear_filter(filter, data, frequency_grid=None,
 
 
 def matched_filter_core(template, data, psd=None, h_norm=None,
-                        frequency_grid=None, method="regression", **kwargs):
+                        frequency_grid=None, method="regression", regular_snr=False, **kwargs):
 
     htilde = make_frequency_series(template, frequency_grid=frequency_grid,
                                    method=method, **kwargs)
@@ -105,7 +105,7 @@ def matched_filter_core(template, data, psd=None, h_norm=None,
         h_norm = sigmasq(htilde, psd=psd, frequency_grid=frequency_grid,
                          method=method, **kwargs)
 
-    norm = 1 / np.sqrt(h_norm)
+    norm = 2 / np.sqrt(h_norm)
 
     if isinstance(data, TimeSeries):
         times = data.times
@@ -134,7 +134,7 @@ def matched_filter(template, data, psd=None, frequency_grid=None,
                                        frequency_grid=frequency_grid,
                                        method=method, h_norm=h_norm,
                                        **kwargs)
-    if not unitary_energy:
+    if unitary_energy:
         data_energy = sigmasq(stilde, psd=psd)
     else:
         data_energy = 1
