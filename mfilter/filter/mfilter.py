@@ -7,7 +7,8 @@ import abc
 
 
 def sigmasq(htilde: FrequencySeries, psd=None):
-    norm = 2*htilde.delta_f
+    # norm = 2 * htilde.delta_f
+    norm = 1 * htilde.delta_f
 
     if psd is None:
         sq = htilde.inner()
@@ -39,9 +40,11 @@ def correlation(stilde: FrequencySeries, htilde: FrequencySeries, psd: Frequency
 
 def mfilter(time: TimesSamples, stilde: FrequencySeries,
             htilde: FrequencySeries, reg: BasicRegression, psd=None):
-
-    norm = 2 / sigma(htilde, psd=None)
+    cons = len(time) / time.average_fs
+    norm = 2 * time.average_fs / sigma(htilde, psd=psd)
+    norm /= 2 * cons
     corr = correlation(stilde, htilde, psd=psd)
+    corr *= 2 * cons
     q = to_snr(time, corr, reg=reg)
     q *= norm
     return q
