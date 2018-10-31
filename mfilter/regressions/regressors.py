@@ -9,7 +9,7 @@ def _cast_into_ft(coefs):
     n_freqs = int(len(coefs) / 2)
     ft = 1j * np.zeros(n_freqs)
     for i in range(n_freqs):
-        ft[i] = coefs[i] + 1j * coefs[i + n_freqs]
+        ft[i] = coefs[i] - 1j * coefs[i + n_freqs]
     return ft
 
 
