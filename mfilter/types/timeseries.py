@@ -16,7 +16,7 @@ class TimesSamples(Array):
                 offset = kwargs.get("offset", 0)
                 initial_array = offset + np.arange(n) * delta
             else:
-                arr = IrregularTimeSamples(n, delta, **kwargs)
+                arr = IrregularTimeSamples(n, delta)
                 initial_array = arr.compute(struct=struct, clear=clear, **kwargs)
 
         else:
