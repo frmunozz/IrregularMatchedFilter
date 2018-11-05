@@ -480,6 +480,13 @@ class Array(object):
         else:
             return np.vdot(self.value, other)
 
+    def delete(self, idxs:slice):
+        """
+        delete a part from the array
+        :param idxs: slice of the array to delete
+        """
+        self._data = np.delete(self._data, idxs)
+
     def abs_max_loc(self):
         new_self = abs(self)
         return new_self.max(), new_self.argmax()

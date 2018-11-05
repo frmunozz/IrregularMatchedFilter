@@ -20,21 +20,11 @@ class TimesSamples(Array):
                 initial_array = arr.compute(struct=struct, clear=clear, **kwargs)
 
         else:
-            if delta is None:
-                try:
-                    delta = initial_array.dt
-                except AttributeError:
-                    delta = -1
-
             if isinstance(initial_array, TimesSamples):
                 initial_array = initial_array.value
 
         super().__init__(initial_array)
-        self._delta = delta
 
-    @property
-    def dt(self):
-        return self._delta
 
     @property
     def average_fs(self):
@@ -173,10 +163,6 @@ class TimeSeries(Array):
         return self._times.duration
 
     @property
-    def sample_rate(self):
-        return self._times.average_fs
-
-    @property
     def start_time(self):
         return self._times.min()
 
@@ -204,6 +190,11 @@ class TimeSeries(Array):
     def _return(self, ary, **kwargs):
         times = kwargs.get("times", self._times)
         return TimeSeries(ary, times=times)
+
+    def delete(self, idxs:slice):
+        self._data = np.delete(self._data,idxs)
+        self._times = TimesSamples(initial_array=np.delete(self._times, idxs))
+        self._times.delete(idxs)
 
     def regression(self, series, regressor=None, scale=False):
         from mfilter.regressions.regressors import BasicRegression
