@@ -115,6 +115,9 @@ class BasicRegression(object):
     def reset(self):
         self.coef_ = np.zeros(self.dict.shape(splited=True)[1])
 
+    def set_coef(self, ft):
+        self.coef_ = split_ft(ft)
+
 
 class RidgeRegression(BasicRegression):
     def __init__(self, alpha=1, overfit=True, solver='auto',

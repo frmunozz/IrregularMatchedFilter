@@ -2,6 +2,7 @@ import numpy as np
 from mfilter.types.arrays import Array
 from mfilter.types.frequencyseries import FrequencySamples, FrequencySeries
 import matplotlib.pyplot as plt
+from mfilter.transform.transform import FourierTransform
 # from pynfft import NFFT, Solver
 
 
@@ -194,48 +195,6 @@ class TimeSeries(Array):
     def delete(self, idxs:slice):
         self._data = np.delete(self._data,idxs)
         self._times = TimesSamples(initial_array=np.delete(self._times, idxs))
-        self._times.delete(idxs)
-
-    def regression(self, series, regressor=None, scale=False):
-        from mfilter.regressions.regressors import BasicRegression
-        if isinstance(regressor, BasicRegression):
-            if regressor.valid:
-                if scale:
-                    regressor.scale()
-                return FrequencySeries(regressor.get_ft(series),
-                                       frequency_grid=regressor.frequency, epoch=self.epoch)
-            else:
-                raise ValueError("regressor must have a valid dictionary")
-        else:
-            raise ValueError("need a BasicRegression object")
-
-    def direct_transform(self, dict):
-        return np.dot(dict.matrix, self._data)
-
-    # def ts_nfft(self, series, Nf=None, tol=0.6, flags=None):
-    #     if Nf is None:
-    #         Nf = len(self)
-    #
-    #     plan = NFFT(Nf, len(self))
-    #     plan.x = self._times.value
-    #     plan.precompute()
-    #     solv = Solver(plan, flags=flags)
-    #     solv.y = series.value
-    #     solv.before_loop()
-    #     count = 0
-    #     while True:
-    #         solv.loop_one_step()
-    #         if max(solv.r_iter) < tol:
-    #             break
-    #         if count == 500:
-    #             print("maximum number of iteration reached")
-    #             break
-    #         count += 1
-    #
-    #     freqs = np.fft.fftfreq(Nf)*Nf / self._times.duration
-    #     freqs = FrequencySamples(initial_array=freqs)
-    #     return FrequencySeries(solv.f_hat_iter,
-    #                            frequency_grid=freqs, epoch=self.epoch)
 
     def psd(self, frequency_grid: FrequencySamples, norm='standard'):
         """
@@ -249,52 +208,16 @@ class TimeSeries(Array):
         """
         return frequency_grid.lomb_scargle(self.times, self.value, norm=norm)
 
-    def get_dictionary(self, reg=None, frequency_grid=None, dict=None):
-        from mfilter.regressions import Dictionary
-        if dict is None:
-            if reg is None:
-                if frequency_grid is None:
-                    raise ValueError("must provide either a FrequencySamples,"
-                                     "Regressor object or Dictionary object")
-                else:
-                    dict = Dictionary(self._times, frequency_grid)
-            else:
-                if not reg._valid:
-                    raise ValueError("Regressor object has no valid dictionary")
-                dict = reg.dict
-
-        return dict
-
-    def to_frequencyseries(self, method="regression",
-                           window=None, scale=False, **kwargs):
+    def to_frequencyseries(self, transform: FourierTransform):
         if self.kind == 'complex':
             raise TypeError("transform only work with real timeSeries data")
 
-        if isinstance(window, np.ndarray):
-            series = self._return(self._data * window)
-        else:
-            series = self._return(self._data)
+        tmp = transform.backward(self, N=len(self))
+        freqs = FrequencySamples(initial_array=transform.get_frequency(N=len(self)))
+        return FrequencySeries(tmp, frequency_grid=freqs, epoch=self.epoch)
 
-        if method is "regression":
-            tmp = self.regression(series, regressor=kwargs.get("reg", None), scale=scale)
-
-        elif method is "nfft":
-            raise ValueError("nfft deprecated")
-            # tmp = self.ts_nfft(series, Nf=kwargs.get("Nf", None),
-            #                    flags=kwargs.get("flags", None))
-
-        else:
-            raise ValueError("for now we have only implemented regressor "
-                             "method")
-
-        return tmp
-
-    def match(self, other, psd=None, frequency_grid=None, method="regression",
-              tol=0.1, **kwargs):
-
-        return self.to_frequencyseries(frequency_grid=frequency_grid,
-                                       method=method,
-                                       **kwargs).match(other, psd=psd, tol=tol)
+    def match(self, other, transform: FourierTransform, psd=None, tol=0.1):
+        return self.to_frequencyseries(transform).match(other, psd=psd, tol=tol)
 
     def plot(self, axis=None, label="data", _show=False):
         if axis is None:

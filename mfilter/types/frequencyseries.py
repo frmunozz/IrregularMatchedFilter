@@ -323,15 +323,6 @@ class FrequencySeries(Array):
     def duration(self):
         return 1 / self.basic_df
 
-    # def _return(self, ary, **kwargs):
-    #     freqs = kwargs.get("frequency_grid", self._freqs)
-    #     return FrequencySeries(ary, frequency_grid=freqs,
-    #                            epoch=self._epoch, dtype=self.dtype)
-    #
-    # def _getslice(self, index):
-    #     return self._return(self._data[index],
-    #                         frequency_grid=self._freqs._getslice(index))
-
     def __eq__(self, other):
         if super(FrequencySeries, self).__eq__(other):
             return (self._epoch == other.epoch
@@ -339,53 +330,10 @@ class FrequencySeries(Array):
         else:
             return False
 
-    def reconstruct(self, series, reg=None, times=None):
-        if reg is None:
-            raise ValueError("to do regression method need a regressor")
-
-        if times is None:
-            times = reg.time
-
-        if reg.dict.frequency != self._freqs:
-            raise ValueError("regressor use dictionary with different frequencies")
-        return reg.reconstruct(series), times
-
-    def inverse_transform(self, reg, times=None):
-        if times is not None:
-            reg.set_dict(times, self._freqs)
-        return reg.get_ft(self)
-
-    # def fs_nfft(self, series, times=None):
-    #     if times is None:
-    #         raise ValueError("to do nfft method need a valid TimesSamples")
-    #     plan = NFFT(len(self), len(times))
-    #     plan.x = times.value
-    #     plan.precompute()
-    #     plan.f_hat = series.value
-    #     return plan.trafo(), times
-
-    def to_timeseries(self, method="regression", window=None, **kwargs):
-        from mfilter.types.timeseries import TimeSeries, TimesSamples
-        if isinstance(window, np.ndarray):
-            series = self._return(self._data * window)
-        else:
-            series = self._return(self._data)
-
-        if method is "regression":
-
-            tmp, times = self.reconstruct(series, reg=kwargs.get("reg", None),
-                                          times=kwargs.get("times", None))
-            # tmp = self.inverse_transform(reg, times=times)
-
-        elif method is "nfft":
-            pass
-            # tmp, times = self.fs_nfft(series, times=kwargs.get("times", None))
-
-        else:
-            raise ValueError("for now we have only implemented regressor "
-                             "method")
-
-        return TimeSeries(tmp, times=times)
+    def to_timeseries(self, transform, N=None, uniform=False):
+        from mfilter.types.timeseries import TimeSeries
+        tmp = transform.forward(self, N=N, uniform=uniform)
+        return TimeSeries(tmp, times=transform.get_times())
 
     def match(self, other, psd=None, tol=0.1):
         from mfilter.types import TimeSeries
