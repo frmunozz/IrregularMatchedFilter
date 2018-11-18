@@ -3,6 +3,7 @@ from mfilter.types import TimeSeries, FrequencySeries, FrequencySamples, TimesSa
 from mfilter.filter.matchedfilter import *
 from mfilter.regressions.dictionaries import Dictionary
 from mfilter.regressions.regressors import BasicRegression, SGDRegression
+from mfilter.transform.transform import FourierTransform
 import abc
 
 
@@ -20,10 +21,8 @@ def sigmasq(htilde: FrequencySeries, psd=None):
     return sq.real * norm
 
 
-def to_snr(time: TimesSamples, corr: FrequencySeries, reg: BasicRegression):
-    reg.reset()
-    reg.create_dict(time, corr.frequency_object)
-    return corr.to_timeseries(method="regression", reg=reg)
+def to_snr(time: TimesSamples, corr: FrequencySeries, transform: FourierTransform, uniform=False):
+    return corr.to_timeseries(transform, len(time), uniform=uniform)
 
 
 def sigma(htilde: FrequencySeries, psd: FrequencySeries=None):
@@ -39,13 +38,13 @@ def correlation(stilde: FrequencySeries, htilde: FrequencySeries, psd: Frequency
 
 
 def mfilter(time: TimesSamples, stilde: FrequencySeries,
-            htilde: FrequencySeries, reg: BasicRegression, psd=None):
+            htilde: FrequencySeries, transform: FourierTransform, psd=None, uniform=False):
     cons = len(time) / time.average_fs
     norm = 2 * time.average_fs / sigma(htilde, psd=psd)
     norm /= 2 * cons
     corr = correlation(stilde, htilde, psd=psd)
     corr *= 2 * cons
-    q = to_snr(time, corr, reg=reg)
+    q = to_snr(time, corr, transform, uniform=uniform)
     q *= norm
     return q
 
