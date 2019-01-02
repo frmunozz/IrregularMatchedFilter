@@ -38,6 +38,9 @@ class TimesSamples(Array):
     def shifted(self, shift_by):
         return self - shift_by
 
+    def _return(self, ary, **kwargs):
+        return TimesSamples(ary)
+
 
 class IrregularTimeSamples(object):
     def __init__(self, n: int, dt: float, grid: np.ndarray=None):
@@ -209,11 +212,12 @@ class TimeSeries(Array):
         return frequency_grid.lomb_scargle(self.times, self.value, norm=norm)
 
     def to_frequencyseries(self, transform: FourierTransform):
+        # import pdb
+        # pdb.set_trace()
         if self.kind == 'complex':
             raise TypeError("transform only work with real timeSeries data")
-
-        tmp = transform.backward(self, N=len(self))
-        freqs = FrequencySamples(initial_array=transform.get_frequency(N=len(self)))
+        tmp = transform.backward(self)
+        freqs = transform.get_frequency(N=len(self))
         return FrequencySeries(tmp, frequency_grid=freqs, epoch=self.epoch)
 
     def match(self, other, transform: FourierTransform, psd=None, tol=0.1):

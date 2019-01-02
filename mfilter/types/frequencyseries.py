@@ -136,7 +136,7 @@ class FrequencySamples(Array):
         :param norm:
         """
         if package is "astropy":
-            lomb = LombScargle(times, data, normalization=norm)
+            lomb = LombScargle(times, data)
         else:
             raise ValueError("for now we only use astropy package to compute"
                              "lomb-scargle periodogram")
@@ -162,7 +162,7 @@ class FrequencySamples(Array):
                 psd[zero_idx] = min(psd[:zero_idx])
                 psd[zero_idx+1:] = right_psd
         else:
-            psd = lomb.power(np.abs(self._data))
+            psd = lomb.power(np.abs(self._data), normalization=norm)
 
         # psd[psd < 0] = 0.000001
 
@@ -330,9 +330,9 @@ class FrequencySeries(Array):
         else:
             return False
 
-    def to_timeseries(self, transform, N=None, uniform=False):
+    def to_timeseries(self, transform, uniform=False, new_coef=True):
         from mfilter.types.timeseries import TimeSeries
-        tmp = transform.forward(self, N=N, uniform=uniform)
+        tmp = transform.forward(self, uniform=uniform, new_coef=new_coef)
         return TimeSeries(tmp, times=transform.get_times())
 
     def match(self, other, psd=None, tol=0.1):
