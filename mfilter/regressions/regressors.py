@@ -17,7 +17,7 @@ def split_ft(ft):
     coefs = np.zeros(len(ft)*2)
     for i in range(len(ft)):
         coefs[i] = ft[i].real
-        coefs[i + len(ft)] = ft[i].imag
+        coefs[i + len(ft)] = -ft[i].imag
     return coefs
 
 
@@ -101,9 +101,11 @@ class BasicRegression(object):
         self.fit(y.value)
         return _cast_into_ft(self.coef)
 
-    def predict(self, phi: Dictionary =None):
+    def predict(self, phi: Dictionary =None, new_coef=True):
         if phi is None:
             phi = self.dict
+        if new_coef:
+            self._reg.coef_ = self.coef_
         return self._reg.predict(phi.splited_matrix)
 
     def reconstruct(self, frequency_data: Array):
