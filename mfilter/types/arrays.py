@@ -360,7 +360,7 @@ class Array(object):
             weight = 1
 
         # return self.vdot(self / weight)
-        return (abs(self._data)**2 / weight).sum()
+        return (self._data * self.conj() / weight).sum()
 
     def sum(self):
         """
@@ -486,6 +486,14 @@ class Array(object):
         :param idxs: slice of the array to delete
         """
         self._data = np.delete(self._data, idxs)
+
+    def windowed(self, window: np.ndarray, **kwargs):
+        """
+        window the data values and return a copy of the array
+
+        :param window: the window array
+        """
+        return self._return(self._data * window, **kwargs)
 
     def abs_max_loc(self):
         new_self = abs(self)
