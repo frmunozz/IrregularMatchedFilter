@@ -8,25 +8,23 @@ import abc
 
 
 def sigmasq(htilde: FrequencySeries, psd=None):
-    # norm = 2 * htilde.delta_f
-    norm = 1 * htilde.delta_f
-
     if psd is None:
         sq = htilde.inner()
     else:
+        print(psd.delta_f, htilde.delta_f)
         assert psd.delta_f == htilde.delta_f
         assert (psd.frequencies == htilde.frequencies).all()
         sq = htilde.weighted_inner(weight=psd)
 
-    return sq.real * norm
+    return sq
 
 
 def to_snr(time: TimesSamples, corr: FrequencySeries, transform: FourierTransform, uniform=False):
-    return corr.to_timeseries(transform, len(time), uniform=uniform)
+    return corr.to_timeseries(transform)
 
 
 def sigma(htilde: FrequencySeries, psd: FrequencySeries=None):
-    return np.sqrt(sigmasq(htilde, psd=psd))
+    return np.sqrt(np.abs(sigmasq(htilde, psd=psd)) * htilde.delta_f)
 
 
 def correlation(stilde: FrequencySeries, htilde: FrequencySeries, psd: FrequencySeries=None):
@@ -38,15 +36,20 @@ def correlation(stilde: FrequencySeries, htilde: FrequencySeries, psd: Frequency
 
 
 def mfilter(time: TimesSamples, stilde: FrequencySeries,
-            htilde: FrequencySeries, transform: FourierTransform, psd=None, uniform=False):
-    cons = len(time) / time.average_fs
-    norm = 2 * time.average_fs / sigma(htilde, psd=psd)
-    norm /= 2 * cons
+            htilde: FrequencySeries, transform: FourierTransform, psd=None, uniform=False, full=False):
+    fs = time.average_fs
+    df = htilde.delta_f * fs
+    sigmaroot = np.sqrt(np.abs(sigmasq(htilde, psd=psd) * df))
     corr = correlation(stilde, htilde, psd=psd)
-    corr *= 2 * cons
     q = to_snr(time, corr, transform, uniform=uniform)
-    q *= norm
-    return q
+    q *= 2
+    q *= fs
+    q /= sigmaroot
+    norm = 2 * fs / sigmaroot
+    if full:
+        return q, corr, norm
+    else:
+        return q
 
 
 class SecuentialMFilter(object):
