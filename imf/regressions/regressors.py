@@ -1,11 +1,18 @@
 from sklearn import linear_model
 from sklearn.preprocessing import scale
-from mfilter.types import Array
-from mfilter.regressions.dictionaries import Dictionary
+from imf.types import Array
+from imf.regressions.dictionaries import Dictionary
 import numpy as np
 
 
 def _cast_into_ft(coefs):
+    """
+    transform real coefficient of the Fourier Series to Complex coefficients
+    of the Fourier Transform.
+
+    :param coefs:       the real coefficients.
+    :return:            the complex coefficients.
+    """
     n_freqs = int(len(coefs) / 2)
     ft = 1j * np.zeros(n_freqs)
     for i in range(n_freqs):
@@ -14,6 +21,13 @@ def _cast_into_ft(coefs):
 
 
 def split_ft(ft):
+    """
+    transform complex coefficients of the Fourier Transform to real coefficients
+    of the Fourier Series.
+
+    :param ft:          the complex coefficients.
+    :return:            the real coefficients.
+    """
     coefs = np.zeros(len(ft)*2)
     for i in range(len(ft)):
         coefs[i] = ft[i].real
@@ -23,6 +37,14 @@ def split_ft(ft):
 
 class BasicRegression(object):
     def __init__(self, overfit=True, phi: Dictionary = None):
+        """
+        Basic Regression class,
+            for the creation of a Linear Regression instance,
+            here we define the common methods of all regressions types.
+
+        :param overfit:     True if our Regression need to be over fitted.
+        :param phi:         Dictionary object (matrix) to use in the Regression
+        """
         self._ovfit = overfit
         self._reg = self._get_instance()
         self._dict = Dictionary([-1, -1], [-1, -1])
@@ -46,10 +68,20 @@ class BasicRegression(object):
         self._valid = True
 
     def _get_instance(self, cv=3):
+        """
+        Method used on the child-classes to generate the
+        specific Regression method.
+
+        :param cv:
+        """
         pass
 
     @property
     def coef(self):
+        """
+        :return:            coeficients of the Regression, if there is no coefficients
+                            (no .fit done so far), the return an array of zeros.
+        """
         if self.coef_ is None:
             return np.zeros(len(self._dict.frequency))
         else:
@@ -57,26 +89,49 @@ class BasicRegression(object):
 
     @property
     def dict(self):
+        """
+        :return:            Dictionary object to use in the Regression
+        """
         return self._dict
 
     @property
     def df(self):
+        """
+        :return:            frequency step from the frequency used on the Dictionary.
+        """
         return self.dict.df
 
     @property
     def frequency(self):
+        """
+        :return:            Frequencies used on the Dictionary
+        """
         return self.dict.frequency
 
     @property
     def time(self):
+        """
+        :return:            Times used in the Dictionary
+        """
         return self._dict.time
 
     def create_dict(self, times, frequency):
+        """
+        Create a new Dictionary to use on the Regression method.
+
+        :param times:       the new times to use (TimeSamples)
+        :param frequency:   the new frequencies to use (FrequencySamples)
+        """
         phi = Dictionary(times, frequency)
         self._validate_phi(phi)
         self.valid = True
 
     def set_dict(self, phi: Dictionary):
+        """
+        Set a new dictionary as the default dictionary to use by the Regression.
+
+        :param phi:         the new Dictionary
+        """
         self._validate_phi(phi)
 
     def scale(self):
@@ -85,23 +140,41 @@ class BasicRegression(object):
         scale(self._dict.splited_matrix)
 
     def fit(self, y: np.ndarray):
+        """
+        Fit coefficients to input data using the default dictionary.
+
+        :param y:           input data
+        """
         if not self._valid:
             raise ValueError("regressor doesn't have a valid dictionary")
 
-        n = self._dict.shape(splited=True)[1]
+        n = self._dict.shape(split_matrix=True)[1]
         if self.coef_ is None or len(self.coef_) != n:
             self.reset()
 
         self._reg.fit(self._dict.splited_matrix, y, coef_init=self.coef_)
-        # self._reg.fit(self._dict.splited_matrix, to_fit)
-
         self.coef_ = self._reg.coef_
 
     def get_ft(self, y: Array):
-        self.fit(y.value)
+        """
+        get the Fourier Coefficients for a given input TimeSeries using
+        the default Dictionary
+
+        :param y:           input TimeSeries
+        :return:            Fourier Coefficients (FrequencySeries)
+        """
+        self.fit(y.data)
         return _cast_into_ft(self.coef)
 
     def predict(self, phi: Dictionary =None, new_coef=True):
+        """
+        Predict values from the current computed coefficients,
+        This is transform from frequency domain to time domain.
+
+        :param phi:         the Dictionary to use
+        :param new_coef:    True if we want to use new computed coefficients.
+        :return:            TimeSeries with the predicted data.
+        """
         if phi is None:
             phi = self.dict
         if new_coef:
@@ -109,21 +182,41 @@ class BasicRegression(object):
         return self._reg.predict(phi.splited_matrix)
 
     def reconstruct(self, frequency_data: Array):
-        return np.dot(self._dict.matrix, frequency_data.value)
+        return np.dot(self._dict.matrix, frequency_data.data)
 
     def score(self, y: Array):
-        return self._reg.score(self._dict.splited_matrix, y.value)
+        """
+        :param y:           input TimeSeries
+        :return:            R2 score from the predicted TimeSeries compared
+                            to the input
+        """
+        return self._reg.score(self._dict.splited_matrix, y.data)
 
     def reset(self):
-        self.coef_ = np.zeros(self.dict.shape(splited=True)[1])
+        """
+        reset the coefficients of the regressions and set them to 0.
+        """
+        self.coef_ = np.zeros(self.dict.shape(split_matrix=True)[1])
 
     def set_coef(self, ft):
+        """
+        set the coefficients of the regressions from a given value
+        :param ft: value (complex fourier coefficients) to use.
+        """
         self.coef_ = split_ft(ft)
 
 
 class RidgeRegression(BasicRegression):
     def __init__(self, alpha=1, overfit=True, solver='auto',
                  phi: Dictionary = None):
+        """
+        Ridge Regression
+
+        :param alpha:
+        :param overfit:
+        :param solver:
+        :param phi:
+        """
         self._a = alpha
         self._solver = solver
         super().__init__(overfit=overfit, phi=phi)
@@ -164,6 +257,19 @@ class ElasticNetRegression(BasicRegression):
 class SGDRegression(BasicRegression):
     def __init__(self, alpha=0.0001, max_iter=500, tol=0.01,
                  penalty="l2", l1_ratio=0.5, overfit=True, phi: Dictionary = None):
+        """
+        Stochastic Gradient Descent Class,
+            sub-class of Basic Regression, it will perform the Linear Regression using
+            Stochastic Gradient Descent.
+
+        :param alpha:
+        :param max_iter:
+        :param tol:
+        :param penalty:
+        :param l1_ratio:
+        :param overfit:
+        :param phi:
+        """
         self._a = alpha
         self._max_iter = max_iter
         self._tol = tol
