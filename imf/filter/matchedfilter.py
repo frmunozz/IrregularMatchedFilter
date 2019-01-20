@@ -1,5 +1,5 @@
 
-from mfilter.types import TimeSeries, FrequencySeries, FrequencySamples
+from imf.types import TimeSeries, FrequencySeries, FrequencySamples
 import numpy as np
 
 

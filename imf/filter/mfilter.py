@@ -1,9 +1,9 @@
 
-from mfilter.types import TimeSeries, FrequencySeries, FrequencySamples, TimesSamples
-from mfilter.filter.matchedfilter import *
-from mfilter.regressions.dictionaries import Dictionary
-from mfilter.regressions.regressors import BasicRegression, SGDRegression
-from mfilter.transform.transform import FourierTransform
+from imf.types import TimeSeries, FrequencySeries, FrequencySamples, TimeSamples
+from imf.filter.matchedfilter import *
+from imf.regressions.dictionaries import Dictionary
+from imf.regressions.regressors import BasicRegression, SGDRegression
+from imf.transform.transform import FourierTransformer
 import abc
 
 
@@ -19,7 +19,7 @@ def sigmasq(htilde: FrequencySeries, psd=None):
     return sq
 
 
-def to_snr(time: TimesSamples, corr: FrequencySeries, transform: FourierTransform, uniform=False):
+def to_snr(time: TimeSamples, corr: FrequencySeries, transform: FourierTransformer, uniform=False):
     return corr.to_timeseries(transform)
 
 
@@ -35,8 +35,8 @@ def correlation(stilde: FrequencySeries, htilde: FrequencySeries, psd: Frequency
                            epoch=htilde.epoch)
 
 
-def mfilter(time: TimesSamples, stilde: FrequencySeries,
-            htilde: FrequencySeries, transform: FourierTransform, psd=None, uniform=False, full=False):
+def mfilter(time: TimeSamples, stilde: FrequencySeries,
+            htilde: FrequencySeries, transform: FourierTransformer, psd=None, uniform=False, full=False):
     fs = time.average_fs
     df = htilde.delta_f * fs
     sigmaroot = np.sqrt(np.abs(sigmasq(htilde, psd=psd) * df))
@@ -122,7 +122,7 @@ class SecuentialMFilter(object):
         if not isinstance(params, dict):
             raise ValueError("no params where given")
 
-        times = TimesSamples(np.linspace(0, self.event_duration, N))
+        times = TimeSamples(np.linspace(0, self.event_duration, N))
         dictionary = Dictionary(times, self.freq)
         reg = SGDRegression(alpha=10**(-10), tol=0.001, phi=dictionary)
         htildes = {}
@@ -151,7 +151,7 @@ class SecuentialMFilter(object):
 
         window_range = self._get_idx(time_start)
 
-        window_time = TimesSamples(self.data.times[window_range])
+        window_time = TimeSamples(self.data.times[window_range])
         window_data = TimeSeries(self.data[window_range],
                                  times=window_time)
         n_seg = len(window_data)//10
@@ -171,7 +171,7 @@ class SecuentialMFilter(object):
     def _segment_match_previous_template(self, window_range,
                                          htildes, overfit=0.5):
 
-        window_time = TimesSamples(self.data.times[window_range])
+        window_time = TimeSamples(self.data.times[window_range])
         window_data = TimeSeries(self.data[window_range],
                                  times=window_time)
         n_seg = len(window_data) // 10
@@ -193,7 +193,7 @@ class SecuentialMFilter(object):
                                             templates_generator, overfit=0.5,
                                             **kwargs):
 
-        window_time = TimesSamples(self.data.times[window_range])
+        window_time = TimeSamples(self.data.times[window_range])
         window_data = TimeSeries(self.data[window_range],
                                  times=window_time)
         templates = templates_generator(window_time, **kwargs)
