@@ -6,7 +6,7 @@ from .implementations.Segment import DataSegment
 from .utils import Window
 import logging
 from nfft import nfft_adjoint, nfft
-from mfilter.implementations.regressions import *
+from imf.implementations.regressions import *
 from .types.timeseries import TimeSeries
 from .types.frequencyseries import FrequencySeries
 from .hypothesistest.probabilities import HypothesisTesting

@@ -1,9 +1,9 @@
 
-from mfilter.implementations.simulate import SimulateSignal
-from mfilter.implementations.regressions import RidgeRegression, ElasticNetRegression, Dictionary
-from mfilter.types.timeseries import TimeSeries
-from mfilter.types.frequencyseries import FrequencySamples
-from mfilter.core import MatchedFilterRegression
+from imf.implementations.simulate import SimulateSignal
+from imf.implementations.regressions import RidgeRegression, ElasticNetRegression, Dictionary
+from imf.types.timeseries import TimeSeries
+from imf.types.frequencyseries import FrequencySamples
+from imf.core import MatchedFilterRegression
 import matplotlib.pyplot as plt
 from astropy.stats import LombScargle
 import numpy as np

@@ -1,5 +1,5 @@
-from mfilter.filter import matched_filter_core
-from mfilter.types import FrequencySeries, TimeSeries
+from imf.filter import matched_filter_core
+from imf.types import FrequencySeries, TimeSeries
 import numpy as np
 
 
