@@ -346,7 +346,7 @@ class FrequencySeries(Array):
         """
         from imf.types.timeseries import TimeSeries
 
-        tmp = transformer.forward(self, kwargs)
+        tmp = transformer.forward(self, **kwargs)
         return TimeSeries(tmp, times=transformer.get_times())
 
     # TODO: NOT IMPLEMENTED
