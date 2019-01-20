@@ -24,9 +24,10 @@ class Array(object):
     def __init__(self, initial_array, dtype=None):
         """
         Array used to do numeric calculations in order to simplify posteriori
-        syntax. It is a convenient wrapped around numpy. Original idea should
-        be use methods declared in PyCBC base code but since it's under
-        developing for python 3.x we need to write the classes.
+        syntax. It is a convenient wrapped around numpy.
+
+        It is a small copy based in PyCBC constructions for types. Creating
+        only useful methods.
 
         :param initial_array:   array-like object (list, numpy.array)
                                 data type to be wrapped in Array class
@@ -34,7 +35,7 @@ class Array(object):
                                 type of the encapsulated data
         """
         if isinstance(initial_array, Array):
-            initial_array = initial_array.value
+            initial_array = initial_array.data
         else:
             initial_array = np.array(initial_array)
 
@@ -79,16 +80,22 @@ class Array(object):
         """
         Multiply by an Array or a scalar and return an Array.
 
+        If the multiplications is done with another array, it will
+        be an element-wise multiplication and need to be of the same
+        length.
+
+        This should return a new instance of Array.
+
         :param other: Array or scalar
         :return: Array
         """
-        return self._data * other
+        return Array(self._data * other, dtype=self.dtype)
 
     __rmul__ = __mul__
 
     def __imul__(self, other):
         """
-        Multiply by an Array or a scalar and return an Array.
+        Multiply by an Array or a scalar over self array.
 
         :param other: Array or scalar
         :return: Array
@@ -100,16 +107,24 @@ class Array(object):
         """
         Add Array to Array or scalar and return an Array.
 
+        If the other is an array, the addition will be element wise and
+        need to be of the same length.
+
+        should return a new instance of Array.
+
         :param other: Array or scalar
         :return: Array
         """
-        return self._data + other
+        return Array(self._data + other, dtype=self.dtype)
 
     __radd__ = __add__
 
     def __iadd__(self, other):
         """
         Add Array to Array or scalar and return an Array.
+
+        If the other is an array, the addition will be element wise and
+        need to be of the same length.
 
         :param other: Array or scalar
         :return: Array
@@ -207,8 +222,8 @@ class Array(object):
         We define this to return true when the data of two Array are identical
         and all the meta data are identical too.
 
-        :param other:
-        :return:
+        :param other: Array to compare with
+        :return: True if they are equal, False if not.
         """
         if type(self) != type(other):
             return False
@@ -217,7 +232,7 @@ class Array(object):
         if len(self) != len(other):
             return False
 
-        return (self.value == other.value).all()
+        return (self.data == other.data).all()
 
     def __getitem__(self, index):
         """
@@ -266,7 +281,7 @@ class Array(object):
                                  "or slice")
 
     @property
-    def value(self):
+    def data(self):
         return self._data
 
     @property
@@ -462,9 +477,9 @@ class Array(object):
         :param other: Array type or array-like
         """
         if isinstance(other, Array):
-            return np.dot(self.value, other.value)
+            return np.dot(self.data, other.data)
         else:
-            return np.dot(self.value, other)
+            return np.dot(self.data, other)
 
     def vdot(self, other):
         """
@@ -476,9 +491,9 @@ class Array(object):
         :return:
         """
         if isinstance(other, Array):
-            return np.vdot(self.value, other.value)
+            return np.vdot(self.data, other.data)
         else:
-            return np.vdot(self.value, other)
+            return np.vdot(self.data, other)
 
     def delete(self, idxs:slice):
         """

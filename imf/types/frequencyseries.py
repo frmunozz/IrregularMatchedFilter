@@ -3,10 +3,9 @@ Provides a class representing a frequency series.
 """
 
 import numpy as np
-from mfilter.types.arrays import Array
+from imf.types.arrays import Array
 from astropy.stats import LombScargle
 import matplotlib.pyplot as plt
-# from pynfft import NFFT, Solver
 import scipy.signal as signal
 
 
@@ -63,7 +62,7 @@ class FrequencySamples(Array):
             if isinstance(initial_array, FrequencySamples):
                 df = initial_array.basic_df
                 samples_per_peak = initial_array.samples_per_peak
-                initial_array = initial_array.value
+                initial_array = initial_array.data
             else:
                 if df is None:
                     df = initial_array[1] - initial_array[0]
@@ -78,8 +77,8 @@ class FrequencySamples(Array):
         """
         check if the Nyquist-Shannon sampling theorem is satisfied
 
-        :param B: Maximum frequency of interest
-        :return: True if the NSST is satisfied
+        :param B:       Maximum frequency of interest
+        :return:        True if the NSST is satisfied
         """
         return 2 * B < self.max()
 
@@ -280,11 +279,11 @@ class FrequencySeries(Array):
         self._epoch = epoch
 
     @property
-    def frequency_object(self):
+    def frequencies(self):
         return self._freqs
 
     @property
-    def delta_f(self):
+    def df(self):
         return self._freqs.df
 
     @property
@@ -298,10 +297,6 @@ class FrequencySeries(Array):
     @property
     def min_freq(self):
         return self._freqs.min()
-
-    @property
-    def frequencies(self):
-        return self._freqs.value
 
     @property
     def samples_per_peak(self):
@@ -324,86 +319,53 @@ class FrequencySeries(Array):
         return 1 / self.basic_df
 
     def __eq__(self, other):
+        """
+        two FrequencySeries are equals if their values are the same,
+        their frequency steps are the same and the epoch is the same.
+
+        :param other:
+        :return:
+        """
         if super(FrequencySeries, self).__eq__(other):
             return (self._epoch == other.epoch
                     and self.basic_df == other.basic_df)
         else:
             return False
 
-    def to_timeseries(self, transform, uniform=False, new_coef=True):
-        from mfilter.types.timeseries import TimeSeries
-        tmp = transform.forward(self, uniform=uniform, new_coef=new_coef)
-        return TimeSeries(tmp, times=transform.get_times())
+    def to_timeseries(self, transformer, **kwargs):
+        """
+        calculate the Fourier Transform of the FrequencySeries and create a
+        TimeSeries.
 
-    def match(self, other, psd=None, tol=0.1):
-        from mfilter.types import TimeSeries
-        from mfilter.filter import match
+        The transform is done by a Transformer which can use Fast Fourier Transform
+        or Regressions for the Fourier Transform.
 
-        if isinstance(other, TimeSeries):
-            if abs(other.duration / self.duration - 1) > tol:
-                raise ValueError("duration of times is higher than given "
-                                 "tolerance")
-            other = other.to_frequencyseries()
+        :param transformer:         Transformer Object
+        :param kwargs:              additional parameters for the Fourier Transform.
+        :return:                    TimeSeries object of the Fourier Transform
+        """
+        from imf.types.timeseries import TimeSeries
 
-        assert len(other) == len(self)
+        tmp = transformer.forward(self, kwargs)
+        return TimeSeries(tmp, times=transformer.get_times())
 
-        if psd is not None:
-            assert len(psd) == len(self)
-
-        return match(self, other, psd=psd)
-
-    def plot(self, axis=None, by_components=True, _show=True,
-             label="abs_value"):
-        if axis is None:
-            fig = plt.figure()
-            axis = fig.add_subplot(111)
-
-        if by_components:
-            axis.plot(self.frequencies, self.real, label="real part")
-            axis.plot(self.frequencies, self.imag, label="imag part")
-        else:
-            axis.plot(self.frequencies, abs(self), label=label)
-
-        axis.set_title("frequency domain values")
-        axis.set_xlabel("frequency")
-        axis.legend()
-        if _show:
-            plt.show()
-
-    def split_values(self):
-        return np.hstack((self.real, self.imag))
-
-    # TODO: Not used
-    # def frequency_slice(self, start, end):
-    #     start_idx = np.argmin(np.abs(self._freqs.offset - start))
-    #     end_idx = np.argmin(np.abs(self._freqs.end - end))
-    #     return self.slice_by_indexes(start_idx, end_idx), \
-    #         self._freqs.slice_by_values(start, end)
+    # TODO: NOT IMPLEMENTED
+    # def match(self, other, psd=None, tol=0.1):
+    #     from imf.types import TimeSeries
+    #     from imf.filter import match
     #
-    # def almost_equals(self, other):
-    #     if isinstance(other, FrequencySeries):
-    #         if type(self) != type(other):
-    #             return False
-    #         if len(self) != len(other):
-    #             return False
-    #         if self.delta != other.delta:
-    #             return False
-    #         if self.frequency != other.frequency:
-    #             return False
-    #         return True
-    #     return False
+    #     if isinstance(other, TimeSeries):
+    #         if abs(other.duration / self.duration - 1) > tol:
+    #             raise ValueError("duration of times is higher than given "
+    #                              "tolerance")
+    #         other = other.to_frequencyseries()
     #
-    # def equivalent_freq_series(self, other):
-    #     if isinstance(other, FrequencySeries):
-    #         if type(self) != type(other):
-    #             return False
-    #         if self.dtype != other.dtype:
-    #             return False
-    #         if len(self) != len(other):
-    #             return False
-    #         if self.delta != other.delta:
-    #             return False
-    #         if self.frequency != other.frequency:
-    #             return False
-    #         return True
-    #     return False
+    #     assert len(other) == len(self)
+    #
+    #     if psd is not None:
+    #         assert len(psd) == len(self)
+    #
+    #     return match(self, other, psd=psd)
+    #
+    # def split_values(self):
+    #     return np.hstack((self.real, self.imag))
